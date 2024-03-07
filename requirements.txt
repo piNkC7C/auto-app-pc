@@ -1,4 +1,4 @@
-pyautogui
+pyautogui~=0.9.54
 esdk-obs-python
 PyMySQL
 colorama>=0.4.1
@@ -14,3 +14,11 @@ xlsxwriter
 matplotlib>=3.0.3
 pillow>=5.4.1
 pytesseract
+psutil~=5.9.8
+pyperclip~=1.8.2
+pynput~=1.6.8
+certifi~=2023.11.17
+urllib3~=2.1.0
+requests~=2.31.0
+pyinstaller~=6.4.0
+cx_Freeze~=6.15.15

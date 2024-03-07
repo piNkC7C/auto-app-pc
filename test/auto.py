@@ -9,7 +9,7 @@ import psutil
 import win32con
 
 import win32gui
-import pyperclip;
+import pyperclip
 
 
 def is_program_in_foreground(program_name):
