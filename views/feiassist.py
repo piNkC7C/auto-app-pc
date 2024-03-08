@@ -277,8 +277,8 @@ class FeiAssistPage(wx.Frame):
         self.fei_status = switch
         if switch:
             self.switch.refresh_switch(switch)
-            listener_thread = threading.Thread(target=self.global_listener.start_listening)
-            listener_thread.start()
+            # listener_thread = threading.Thread(target=self.global_listener.start_listening)
+            # listener_thread.start()
             self.message_queue_manager.insert_message_task({
                 "UserId": self.info["userid"],
                 "Status": 1

@@ -75,7 +75,7 @@ def movePosition(x, y):
             cx = x
         else:
             cx = cx + xi
-        pyautogui.moveTo(cx, cy)
+        pyautogui.moveTo(cx, cy, duration=0.8)
 
 
 class APP(wx.Frame):
@@ -100,10 +100,10 @@ class APP(wx.Frame):
     def __init__(self):
         super().__init__(None, title="", style=wx.BORDER_NONE | wx.STAY_ON_TOP | wx.FRAME_NO_TASKBAR)
         self.panel = wx.Panel(self)
-        self.label = wx.StaticText(self.panel, label="小飞助理托管中\n鼠标坐标:", size=(500, 100))
-        font = wx.Font(24, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)  # 调整字体大小
+        self.label = wx.StaticText(self.panel, label="小飞助理托管中\n鼠标坐标:", size=(600, 100))
+        font = wx.Font(32, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)  # 调整字体大小
         self.label.SetFont(font)
-        self.label.SetForegroundColour(wx.Colour(219, 41, 75))
+        self.label.SetForegroundColour(wx.Colour(255, 0, 48))
         self.SetTransparent(200)  # 设置窗口透明度
         self.SetBackgroundColour(wx.Colour(255, 255, 255, 0))  # 设置背景为透明色
         self.Bind(wx.EVT_TIMER, self.update_position)
@@ -114,7 +114,7 @@ class APP(wx.Frame):
         screen_width, screen_height = wx.GetDisplaySize()
         self.Fit()  # 自适应标签的大小
         self.SetSize(self.label.GetSize())  # 设置窗口大小与标签大小匹配
-        self.SetPosition((screen_width - self.GetSize()[0], 50))
+        self.SetPosition((screen_width - self.GetSize()[0] + 50, 50))
 
     def update_position(self, event):
         current_position = pyautogui.position()
@@ -254,8 +254,9 @@ class APP(wx.Frame):
                         button7location.top + button7location.height / 2)
         time.sleep(2)
         inputContent(name)
-        time.sleep(1)
+        time.sleep(2)
         movePosition(140, 130)
+        time.sleep(2)
         pyautogui.click(140, 130)
         time.sleep(3)
         # button1location = pyautogui.locateOnScreen('res/sendaddress.png', confidence=0.8)
@@ -283,59 +284,76 @@ class APP(wx.Frame):
             time.sleep(2)
         except Exception as e:
             debugLog(e)
-        # self.commonClick()
+        self.wait_fei_open(1)
+
+    def wait_fei_open(self, wait_num):
+        try:
+            pyautogui.locateOnScreen('res/zixun.png', confidence=0.9)
+        except pyautogui.ImageNotFoundException:
+            print("未找到激活咨询图片")
+            try:
+                pyautogui.locateOnScreen('res/zixun_notact.png', confidence=0.9)
+            except pyautogui.ImageNotFoundException:
+                print("未找到咨询图片")
+                print("等待小飞助理加载")
+                wait_num += 1
+                if wait_num > 6:
+                    pass
+                else:
+                    time.sleep(10)
+                    self.wait_fei_open(wait_num)
 
     def clickLine(self):
-        self.clickzixuntab()
-        button7location = pyautogui.locateOnScreen('res/line.png', confidence=0.7)
-        # time.sleep(2)
-        movePosition(button7location.left + button7location.width / 2, button7location.top + button7location.height / 2)
-        pyautogui.click(button7location.left + button7location.width / 2,
-                        button7location.top + button7location.height / 2)
-        time.sleep(2)
-        self.clicksendmsg()
+        try:
+            button7location = pyautogui.locateOnScreen('res/line.png', confidence=0.7)
+            # time.sleep(2)
+            movePosition(button7location.left + button7location.width / 2,
+                         button7location.top + button7location.height / 2)
+            pyautogui.click(button7location.left + button7location.width / 2,
+                            button7location.top + button7location.height / 2)
+            time.sleep(2)
+            self.clicksendmsg(1)
+        except pyautogui.ImageNotFoundException:
+            print("未找到行程图片")
         # movePosition(500, 550)
         # pyautogui.click(500, 550)
         # pyautogui.hotkey("enter")
         # self.commonClick()
 
     def clickJihe(self):
-        self.clickzixuntab()
         button7location = pyautogui.locateOnScreen('res/jihetu.png', confidence=0.7)
         # time.sleep(2)
         movePosition(button7location.left + button7location.width / 2, button7location.top + button7location.height / 2)
         pyautogui.click(button7location.left + button7location.width / 2,
                         button7location.top + button7location.height / 2)
         time.sleep(3)
-        self.clicksendmsg()
+        self.clicksendmsg(1)
         # movePosition(500, 550)
         # pyautogui.click(500, 550)
         # pyautogui.hotkey("enter")
         # self.commonClick()
 
     def clickPhone(self):
-        self.clickzixuntab()
         button7location = pyautogui.locateOnScreen('res/phone.png', confidence=0.7)
         # time.sleep(2)
         movePosition(button7location.left + button7location.width / 2, button7location.top + button7location.height / 2)
         pyautogui.click(button7location.left + button7location.width / 2,
                         button7location.top + button7location.height / 2)
         time.sleep(2)
-        self.clicksendmsg()
+        self.clicksendmsg(1)
         # movePosition(500, 550)
         # pyautogui.click(500, 550)
         # pyautogui.hotkey("enter")
         # self.commonClick()
 
     def clickCompany(self):
-        self.clickzixuntab()
         button7location = pyautogui.locateOnScreen('res/company.png', confidence=0.7)
         # time.sleep(2)
         movePosition(button7location.left + button7location.width / 2, button7location.top + button7location.height / 2)
         pyautogui.click(button7location.left + button7location.width / 2,
                         button7location.top + button7location.height / 2)
         time.sleep(2)
-        self.clicksendmsg()
+        self.clicksendmsg(1)
         # movePosition(500, 550)
         # pyautogui.click(500, 550)
         # pyautogui.hotkey("enter")
@@ -349,7 +367,7 @@ class APP(wx.Frame):
         pyautogui.click(button7location.left + button7location.width / 2,
                         button7location.top + button7location.height / 2)
         time.sleep(2)
-        self.clicksendmsg()
+        self.clicksendmsg(1)
         # movePosition(500, 550)
         # pyautogui.click(500, 550)
         # pyautogui.hotkey("enter")
@@ -363,7 +381,7 @@ class APP(wx.Frame):
         pyautogui.click(button7location.left + button7location.width / 2,
                         button7location.top + button7location.height / 2)
         time.sleep(2)
-        self.clicksendmsg()
+        self.clicksendmsg(1)
         # movePosition(500, 550)
         # pyautogui.click(500, 550)
         # pyautogui.hotkey("enter")
@@ -371,15 +389,15 @@ class APP(wx.Frame):
 
     def clickzixuntab(self):
         try:
-            pyautogui.locateOnScreen('res/zixun.png', confidence=0.8)
+            pyautogui.locateOnScreen('res/zixun.png', confidence=0.9)
         except pyautogui.ImageNotFoundException:
-            button7location = pyautogui.locateOnScreen('res/zixun.png', confidence=0.8)
-            if button7location is not None:
-                movePosition(button7location.left + button7location.width / 2,
-                             button7location.top + button7location.height / 2)
-                pyautogui.click(button7location.left + button7location.width / 2,
-                                button7location.top + button7location.height / 2)
-                time.sleep(2)
+            print("未找到咨询tab")
+            button7location = pyautogui.locateOnScreen('res/zixun_notact.png', confidence=0.9)
+            movePosition(button7location.left + button7location.width / 2,
+                         button7location.top + button7location.height / 2)
+            pyautogui.click(button7location.left + button7location.width / 2,
+                            button7location.top + button7location.height / 2)
+            time.sleep(2)
 
     def clickordertab(self):
         button7location = pyautogui.locateOnScreen('res/order.png', confidence=0.7)
@@ -399,14 +417,23 @@ class APP(wx.Frame):
                             button7location.top + button7location.height / 2)
             time.sleep(2)
 
-    def clicksendmsg(self):
+    def clicksendmsg(self, click_num):
         button7location = pyautogui.locateOnScreen('res/sendmsg.png', confidence=0.8)
         movePosition(button7location.left + button7location.width / 2,
                      button7location.top + button7location.height / 2)
         pyautogui.click(button7location.left + button7location.width / 2,
                         button7location.top + button7location.height / 2)
-        pyautogui.hotkey("enter")
-        # self.commonClick()
+        click_num += 1
+        if click_num > 2:
+            return
+        try:
+            pyautogui.locateOnScreen('res/sendmsg_empty.png', confidence=0.8)
+            time.sleep(2)
+            self.clicksendmsg(click_num)
+        except pyautogui.ImageNotFoundException:
+            pass
+            # pyautogui.hotkey("enter")
+            # self.commonClick()
 
     def handlemsg(self, msg):
         debugLog("获取客户聊天信息：" + msg)
@@ -425,7 +452,7 @@ class APP(wx.Frame):
         elif data["data"]["type"] == 2 and data["data"]["subType"] == 1:
             self.clickOrder()
         elif data["data"]["type"] == 2 and data["data"]["subType"] == 2:
-            self.clicksendmsg()
+            self.clicksendmsg(1)
         elif data["data"]["type"] == 3:
             self.clickqianyue()
         elif data["data"]["type"] == 4:
@@ -457,12 +484,14 @@ class APP(wx.Frame):
     def deal_task(self, task):
         print(task)
         self.findChatRoom(task["externalName"])
-        if task["button"] == "行程":
-            self.clickLine()
-        elif task["button"] == "销售手机":
-            self.clickPhone()
-        elif task["button"] == "公司信息":
-            self.clickCompany()
+        if task["tab"] == "咨询":
+            self.clickzixuntab()
+            if task["button"] == "行程":
+                self.clickLine()
+            elif task["button"] == "销售手机":
+                self.clickPhone()
+            elif task["button"] == "公司信息":
+                self.clickCompany()
 
     def close(self):
         self.Destroy()

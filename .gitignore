@@ -2,3 +2,5 @@
 /build
 /dist
 /*.log
+/FeiAssistData
+/assets
