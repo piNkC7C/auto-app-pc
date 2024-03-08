@@ -34,20 +34,20 @@ class MyTaskBarIcon(TaskBarIcon):
         menu = wx.Menu()
 
         # 添加菜单项
-        open_item = menu.Append(wx.ID_ANY, "打开托管", kind=wx.ITEM_CHECK)
-        close_item = menu.Append(wx.ID_ANY, "关闭托管", kind=wx.ITEM_CHECK)
-        destroy_item = menu.Append(wx.ID_ANY, "退出应用")
+        self.open_item = menu.Append(wx.ID_ANY, "打开托管", kind=wx.ITEM_CHECK)
+        self.close_item = menu.Append(wx.ID_ANY, "关闭托管", kind=wx.ITEM_CHECK)
+        self.destroy_item = menu.Append(wx.ID_ANY, "退出应用")
 
         # 绑定菜单项的事件处理函数
-        self.Bind(wx.EVT_MENU, self.OnOpenFei, open_item)
-        self.Bind(wx.EVT_MENU, self.OnCloseFei, close_item)
-        self.Bind(wx.EVT_MENU, self.OnDestroyFei, destroy_item)
+        self.Bind(wx.EVT_MENU, self.OnOpenFei, self.open_item)
+        self.Bind(wx.EVT_MENU, self.OnCloseFei, self.close_item)
+        self.Bind(wx.EVT_MENU, self.OnDestroyFei, self.destroy_item)
 
         # 检查当前的托管状态，并设置菜单项的勾选状态
         if self.frame.fei_status:
-            open_item.Check()
+            self.open_item.Check()
         else:
-            close_item.Check()
+            self.close_item.Check()
 
         # 显示菜单
         self.PopupMenu(menu)
@@ -267,7 +267,7 @@ class FeiAssistPage(wx.Frame):
         print("Switch Account Button Clicked!")
 
     def close_and_open_login_page(self):
-        self.Destroy()  # 关闭当前窗口
+        self.taskbar_icon.OnDestroyFei(self.taskbar_icon.destroy_item)
         self.callback()
 
     def consume_message(self, queue):
@@ -277,8 +277,8 @@ class FeiAssistPage(wx.Frame):
         self.fei_status = switch
         if switch:
             self.switch.refresh_switch(switch)
-            # listener_thread = threading.Thread(target=self.global_listener.start_listening)
-            # listener_thread.start()
+            listener_thread = threading.Thread(target=self.global_listener.start_listening)
+            listener_thread.start()
             self.message_queue_manager.insert_message_task({
                 "UserId": self.info["userid"],
                 "Status": 1

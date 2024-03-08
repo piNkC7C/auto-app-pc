@@ -1,5 +1,9 @@
 import wx
 import threading
+import socket
+import time
+import random
+import string
 
 
 class CustomButton(wx.Button):
@@ -88,6 +92,7 @@ class MyThread(threading.Thread):
         self.running.clear()
         self.stop()
 
+
 # class MyThread(threading.Thread):
 #     def __init__(self, target_function, args):
 #         super().__init__()
@@ -101,3 +106,23 @@ class MyThread(threading.Thread):
 #
 #     def stop(self):
 #         self.running = False  # 设置标志为False，通知线程退出
+
+def get_local_ip():
+    # 获取本地主机名
+    hostname = socket.gethostname()
+    # 获取本地IP地址
+    ip_address = socket.gethostbyname(hostname)
+    return ip_address
+
+def generate_object_id():
+    # 获取当前时间的时间戳（毫秒）
+    timestamp_ms = time.time_ns()
+    # 将毫秒级时间戳转换为十六进制字符串
+    timestamp_hex = hex(timestamp_ms)[2:]
+
+    # 生成一个随机字符串作为ObjectId的后半部分
+    random_chars = ''.join(random.choices(string.ascii_lowercase + string.ascii_uppercase + string.digits, k=16))
+
+    # 拼接时间戳和随机字符串，生成ObjectId
+    object_id = timestamp_hex + random_chars
+    return object_id

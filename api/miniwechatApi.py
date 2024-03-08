@@ -6,7 +6,7 @@ miniwechat_request = MiniWechatRequest()
 async def miniwechat_get_feiassistid():
     try:
         # 发送POST请求
-        response = miniwechat_request.get("/getFeiAssisId")
+        response = miniwechat_request.get("/getFeiAssistId")
         return response
     except Exception as e:
         print("An error occurred during request:", e)

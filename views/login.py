@@ -9,7 +9,7 @@ from api.miniwechatApi import miniwechat_get_feiassistid
 from tools.qrcodeGenerator import QRCodeGenerator
 from tools.socketHandle import socketHandle
 from tools.fileOperate import File
-from tools.tools import CustomButton
+from tools.tools import CustomButton, get_local_ip, generate_object_id
 
 
 class LoginPage(wx.Frame):
@@ -47,17 +47,21 @@ class LoginPage(wx.Frame):
         login_text.SetForegroundColour(wx.Colour(219, 41, 75))
 
         # 获取小飞助理id
-        file_manager = File()
-        self.feiassistid = file_manager.get_fei_assist_id()
+        self.file_manager = File()
+        # get_fetassistid_api_res = asyncio.run(miniwechat_get_feiassistid())
+        # print(get_fetassistid_api_res)
+        self.feiassistid = generate_object_id()
         print(self.feiassistid)
+        self.local_ip = get_local_ip()
 
-        qr_exists = file_manager.check_qr_code_existence(self.feiassistid)
+        qr_exists = self.file_manager.check_qr_code_existence(self.feiassistid)
         if qr_exists:
             pass
         else:
             # 生成登录二维码
             state = json.dumps({
-                "feiassistid": self.feiassistid,
+                "id": self.feiassistid,
+                "ip": self.local_ip
             })
             link = f"http://miniwechat.iflying.com/api/externalAppHome?state={state}"
             print(link)
@@ -67,7 +71,7 @@ class LoginPage(wx.Frame):
             generator.generate_qr_code()
 
         # 创建并启动新线程以监听事件
-        self.thread = threading.Thread(target=self.start_socket_listener, args=(self.feiassistid,))
+        self.thread = threading.Thread(target=self.start_socket_listener, args=(f"{self.feiassistid}{self.local_ip}",))
         self.thread.start()
 
         # 在窗口中央放置二维码
@@ -96,6 +100,7 @@ class LoginPage(wx.Frame):
             self.ReleaseMouse()
 
     def OnCloseButtonClick(self, event):
+        self.file_manager.delete_files_with_name("assets", "qrCode")
         self.Destroy()
 
     def OnButtonEnter(self, event):
@@ -116,9 +121,10 @@ class LoginPage(wx.Frame):
         socket_handler.openSocket(self.handle_message, feiassistid)
 
     def handle_message(self, data):
-        file_manager = File()
-        file_manager.update_login_list(data['data']['userid'], data['data'])
-        file_manager.update_login_info(data['data'])
+        self.file_manager.update_login_list(data['data']['userid'], data['data'])
+        self.file_manager.update_login_info(data['data'])
+        self.file_manager.delete_files_with_name("assets", "qrCode")
+        # self.file_manager.delete_file(f"assets/qrCode{self.feiassistid}.png")
         # 在主线程中关闭当前窗口并打开FeiAssistPage
         wx.CallAfter(self.close_and_open_fei_assist_page)
 

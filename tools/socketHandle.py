@@ -25,6 +25,8 @@ class socketHandle:
         @sio.on(feiassistid)
         def on_message(data):
             func(data)
+            # 停止监听 feiassistid 事件
+            sio.disconnect()
 
         sio.connect('http://124.71.179.1:4745')
 

@@ -7,6 +7,7 @@ import sys
 def custom_open(file_path, mode='r'):
     return open(file_path, mode, encoding='utf-8')
 
+
 class File(object):
     def __init__(self):
         pass
@@ -93,3 +94,21 @@ class File(object):
         exe_file = sys.argv[0]
         exe_dir = os.path.dirname(exe_file)
         return exe_dir
+
+    def delete_file(self, file_path):
+        try:
+            os.remove(file_path)
+            print(f"文件 {file_path} 删除成功")
+        except Exception as e:
+            print(f"删除文件 {file_path} 失败：{e}")
+
+    def delete_files_with_name(self, directory, name):
+        # 遍历目录中的文件
+        for filename in os.listdir(directory):
+            # 判断文件名是否包含 'qrCode'
+            if name in filename:
+                # 构建文件的绝对路径
+                filepath = os.path.join(directory, filename)
+                # 删除文件
+                os.remove(filepath)
+                print(f"已删除文件: {filepath}")
