@@ -3,12 +3,17 @@ from wx.adv import TaskBarIcon
 import urllib.request
 import io
 import threading
+import asyncio
 
 from tools.tools import CustomButton, CustomSwitch, MyThread
 from tools.fileOperate import File
 from tools.messageQueue import MessageQueueManager
 from tools.globalListener import GlobalListener
 from gui import APP
+from .online import OnLinePage, OnAIPage, OffAIPage
+from log.log_record import debugLog
+from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status
+from .components.message import MessageBox
 
 
 class MyTaskBarIcon(TaskBarIcon):
@@ -18,25 +23,13 @@ class MyTaskBarIcon(TaskBarIcon):
 
         self.icon = wx.Icon('iflying.ico', wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon, "小飞托管")
-
-        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarLeftDClick)
-        self.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnTaskBarRightUp)
-
-    def OnTaskBarLeftDClick(self, event):
-        print(self.frame.taskbar_show)
-        if not self.frame.taskbar_show:
-            self.frame.Show(True)
-        else:
-            pass
-
-    def OnTaskBarRightUp(self, event):
         # 创建一个菜单
-        menu = wx.Menu()
+        self.menu = wx.Menu()
 
         # 添加菜单项
-        self.open_item = menu.Append(wx.ID_ANY, "打开托管", kind=wx.ITEM_CHECK)
-        self.close_item = menu.Append(wx.ID_ANY, "关闭托管", kind=wx.ITEM_CHECK)
-        self.destroy_item = menu.Append(wx.ID_ANY, "退出应用")
+        self.open_item = self.menu.Append(wx.ID_ANY, "打开托管", kind=wx.ITEM_CHECK)
+        self.close_item = self.menu.Append(wx.ID_ANY, "关闭托管", kind=wx.ITEM_CHECK)
+        self.destroy_item = self.menu.Append(wx.ID_ANY, "退出应用")
 
         # 绑定菜单项的事件处理函数
         self.Bind(wx.EVT_MENU, self.OnOpenFei, self.open_item)
@@ -49,9 +42,21 @@ class MyTaskBarIcon(TaskBarIcon):
         else:
             self.close_item.Check()
 
+        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarLeftDClick)
+        self.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnTaskBarRightUp)
+
+    def OnTaskBarLeftDClick(self, event):
+        # debugLog(self.frame.taskbar_show)
+        if not self.frame.taskbar_show:
+            self.frame.Show(True)
+        else:
+            pass
+
+    def OnTaskBarRightUp(self, event):
+
         # 显示菜单
-        self.PopupMenu(menu)
-        menu.Destroy()
+        self.PopupMenu(self.menu)
+        self.menu.Destroy()
 
     def OnOpenFei(self, event):
         self.frame.get_fei_switch_state(True)
@@ -60,9 +65,24 @@ class MyTaskBarIcon(TaskBarIcon):
         self.frame.get_fei_switch_state(False)
 
     def OnDestroyFei(self, event):
+        clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
+        debugLog(clear_res)
+        if clear_res['code'] == 999:
+            return
+        else:
+            self.frame.get_fei_switch_state(False)
+            self.frame.all_close()
+            self.frame.Destroy()
+            self.Destroy()
+            # 结束应用程序的主事件循环
+            wx.App.Get().ExitMainLoop()
+        # pass
+
+    def OnChangeFei(self, event):
+        self.frame.get_fei_switch_state(False)
+        self.frame.all_close()
         self.frame.Destroy()
         self.Destroy()
-        # pass
 
 
 class FeiAssistPage(wx.Frame):
@@ -75,8 +95,11 @@ class FeiAssistPage(wx.Frame):
         self.file_manager = File()
         self.info = self.file_manager.get_login_info()
         self.app_instance = APP()
+        self.online_page = OnLinePage()
+        self.onAI_page = OnAIPage()
+        self.offAI_page = OffAIPage()
+        self.status_page_show('online')
         self.message_queue_manager = MessageQueueManager()
-        self.global_listener = GlobalListener(self.get_fei_switch_state, (False,))
 
         # 居中窗口
         self.Center()
@@ -101,8 +124,9 @@ class FeiAssistPage(wx.Frame):
         self.close_button.Bind(wx.EVT_LEAVE_WINDOW, self.OnButtonLeave)
 
         # 最小化到托盘
-        self.taskbar_icon = MyTaskBarIcon(self)
+        self.fei_status = False
         self.taskbar_show = True
+        self.taskbar_icon = MyTaskBarIcon(self)
 
         # 创建垂直tab
         self.vertical_tab = wx.Panel(self, size=(95, 470), pos=(0, 75))
@@ -126,8 +150,8 @@ class FeiAssistPage(wx.Frame):
         self.load_image_from_url(login_info['avatar'], self.rect_panel_avatar)
         self.rect_panel_name = wx.StaticText(self.tab_pages["账号设置"], label=login_info['name'], pos=(145, 62))
         # default_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        # print("Default font face name:", default_font.GetFaceName())
-        # print("Default font size:", default_font.GetPointSize())
+        # debugLog("Default font face name:", default_font.GetFaceName())
+        # debugLog("Default font size:", default_font.GetPointSize())
         self.rect_panel_name.SetFont(self.font16)
         self.rect_panel_name.SetBackgroundColour(wx.Colour(255, 255, 255))
         # 创建切换账号按钮
@@ -146,7 +170,6 @@ class FeiAssistPage(wx.Frame):
         self.switch_panel = wx.Panel(self.tab_pages["小飞托管"], size=(25, 25), pos=(150, 0))
         self.switch = CustomSwitch(self.switch_panel, size=(25, 25), on_color=(7, 193, 96), off_color=(229, 229, 229),
                                    callback=self.get_fei_switch_state)
-        self.fei_status = False
 
         # 创建tab按钮
         self.tab_buttons = {}
@@ -179,14 +202,87 @@ class FeiAssistPage(wx.Frame):
             self.ReleaseMouse()
 
     def OnCloseButtonClick(self, event):
+        # wx.MessageBox("托管开启失败,请检查是否已在其他地方开启托管!", "提示", wx.OK | wx.ICON_INFORMATION)
         # self.Close()
-        self.taskbar_show = False
-        self.Show(False)
-        # self.message_queue_manager.insert_message_task({
-        #     "externalName": "勒翁龙",
-        #     "tab": "咨询",
-        #     "button": "行程"
-        # }, "ZhangShiJi")
+        # self.taskbar_show = False
+        # self.Show(False)
+        self.message_queue_manager.insert_message_task({
+            "taskList": [{"id": "1",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "search"
+                          },
+                          "waitTime": 2,
+                          "isCircle": 0,
+                          },
+                         {"id": "2",
+                          "action": "paste",
+                          "actObjType": "text",
+                          "text": {
+                              "content": "勒翁龙",
+                          },
+                          "waitTime": 2,
+                          "isCircle": 0,
+                          },
+                         {"id": "3",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "external"
+                          },
+                          "waitTime": 2,
+                          "isCircle": 0,
+                          },
+                         {"id": "4",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "help"
+                          },
+                          "waitTime": 2,
+                          "isCircle": 0,
+                          },
+                         {"id": "5",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "xiaofei"
+                          },
+                          "waitTime": 2,
+                          "isCircle": 0,
+                          },
+                         {"id": "6",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "zixun"
+                          },
+                          "waitTime": 2,
+                          "isCircle": 0,
+                          },
+                         {"id": "7",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "line"
+                          },
+                          "waitTime": 5,
+                          "isCircle": 0,
+                          },
+                         {"id": "8",
+                          "action": "move_click",
+                          "actObjType": "image",
+                          "image": {
+                              "picName": "sendmsg"
+                          },
+                          "waitTime": 2,
+                          "isCircle": 1,
+                          },
+                         ],
+            "externalId": "wmu-p0CwAAMF9gDChOhuPIY-9qqSWTMw"
+        }, "Fei_ZhangShiJie", self.deal_queue_error,
+            self.deal_queue_no_error)
         # pass
 
     def OnButtonEnter(self, event):
@@ -250,7 +346,7 @@ class FeiAssistPage(wx.Frame):
                 bitmap = wx.Bitmap(image)
                 wx.StaticBitmap(panel, -1, bitmap, (0, 0))
             except Exception as e:
-                print("Error creating image from data:", e)
+                debugLog(f"Error creating image from data:{e}")
 
     def download_image(self, url):
         # 下载图像数据
@@ -259,44 +355,88 @@ class FeiAssistPage(wx.Frame):
                 data = response.read()
                 return data
         except Exception as e:
-            print("Error downloading image:", e)
+            debugLog(f"Error downloading image:{e}")
             return None
 
     def OnSwitchAccountButtonClick(self, event):
         wx.CallAfter(self.close_and_open_login_page)
-        print("Switch Account Button Clicked!")
+        # debugLog("Switch Account Button Clicked!")
 
     def close_and_open_login_page(self):
-        self.taskbar_icon.OnDestroyFei(self.taskbar_icon.destroy_item)
-        self.callback()
+        clear_res = asyncio.run(qwcosplay_clear_all_task(self.info['userid']))
+        if clear_res['code'] == 999:
+            return
+        else:
+            self.taskbar_icon.OnChangeFei(self.taskbar_icon.destroy_item)
+            self.callback()
 
-    def consume_message(self, queue):
-        self.message_queue_manager.consume_message_task(queue, self.app_instance.deal_task, True)
+    def status_page_show(self, page):
+        if page == 'online':
+            self.online_page.Show()
+            self.onAI_page.Show(False)
+            self.offAI_page.Show(False)
+        elif page == 'onAI':
+            self.online_page.Show(False)
+            self.onAI_page.Show()
+            self.offAI_page.Show(False)
+        elif page == 'offAI':
+            self.online_page.Show(False)
+            self.onAI_page.Show(False)
+            self.offAI_page.Show()
+        else:
+            pass
+
+    def deal_queue_error(self):
+        self.status_page_show('offAI')
+
+    def deal_queue_no_error(self):
+        self.status_page_show('onAI')
+
+    def start_threading(self, queue, status):
+        if status:
+            # global_listener = GlobalListener(self.get_fei_switch_state, (False,), self.app_instance)
+            # listener_thread = threading.Thread(target=global_listener.start_listening)
+            # listener_thread.start()
+            consume_thread = threading.Thread(target=self.message_queue_manager.consume_message_task,
+                                              args=(queue, self.app_instance.deal_task, True,
+                                                    self.deal_queue_error, self.deal_queue_no_error,
+                                                    self.info['userid'],))
+            consume_thread.start()
+        else:
+            self.message_queue_manager.stop_consume_message_task(f"Fei_{self.info['userid']}")
 
     def get_fei_switch_state(self, switch):
         self.fei_status = switch
         if switch:
-            self.switch.refresh_switch(switch)
-            listener_thread = threading.Thread(target=self.global_listener.start_listening)
-            listener_thread.start()
-            self.message_queue_manager.insert_message_task({
-                "UserId": self.info["userid"],
-                "Status": 1
-            }, "feiAssistStatus")
-            consume_thread = threading.Thread(target=self.consume_message, args=(f"{self.info['userid']}",))
-            consume_thread.start()
-            self.app_instance.Show()
+            change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 1))
+            if change_res['code'] == 200:
+                open_res = self.app_instance.openQW(1, 3, 5)
+                if open_res:
+                    self.switch.refresh_switch(switch)
+                    self.status_page_show('onAI')
+                    self.start_threading(f"Fei_{self.info['userid']}", switch)
+                    # self.message_queue_manager.insert_message_task({
+                    #     "UserId": self.info["userid"],
+                    #     "Status": 1
+                    # }, "feiAssistStatus", self.deal_queue_error)
+            else:
+                wx.MessageBox("托管开启失败,请检查是否已在其他地方开启托管!", "提示", wx.OK | wx.ICON_INFORMATION)
         else:
-            self.switch.refresh_switch(switch)
-            self.message_queue_manager.insert_message_task({
-                "UserId": self.info["userid"],
-                "Status": 0
-            }, "feiAssistStatus")
-            self.message_queue_manager.stop_consume_message_task(self.info["userid"])
-            self.app_instance.Show(False)
+            change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 0))
+            if change_res['code'] == 200:
+                self.switch.refresh_switch(switch)
+                self.status_page_show('online')
+                self.start_threading(f"Fei_{self.info['userid']}", switch)
+                # self.message_queue_manager.insert_message_task({
+                #     "UserId": self.info["userid"],
+                #     "Status": 0
+                # }, "feiAssistStatus", self.deal_queue_error)
+                # self.message_queue_manager.stop_consume_message_task(self.info["userid"])
+            else:
+                wx.MessageBox("托管关闭失败!", "提示", wx.OK | wx.ICON_INFORMATION)
 
-            # self.message_queue_manager.insert_message_task({
-            #     "ExternalName": "勒翁龙",
-            #     "Tab": "咨询",
-            #     "Button": "行程"
-            # }, "feiTest")
+    def all_close(self):
+        self.app_instance.Destroy()
+        self.online_page.Destroy()
+        self.onAI_page.Destroy()
+        self.offAI_page.Destroy()

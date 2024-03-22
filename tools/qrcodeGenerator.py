@@ -4,6 +4,7 @@ import pathlib
 import sys
 
 from .fileOperate import File
+from log.log_record import debugLog
 
 
 class QRCodeGenerator:
@@ -15,7 +16,7 @@ class QRCodeGenerator:
     def generate_qr_code(self):
         # 获取当前执行文件的目录
         file_path = os.path.join("assets", f"qrCode{self.fei_id}.png")
-        print(file_path)
+        # debugLog(file_path)
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,

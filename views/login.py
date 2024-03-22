@@ -10,6 +10,7 @@ from tools.qrcodeGenerator import QRCodeGenerator
 from tools.socketHandle import socketHandle
 from tools.fileOperate import File
 from tools.tools import CustomButton, get_local_ip, generate_object_id
+from log.log_record import debugLog
 
 
 class LoginPage(wx.Frame):
@@ -49,9 +50,9 @@ class LoginPage(wx.Frame):
         # 获取小飞助理id
         self.file_manager = File()
         # get_fetassistid_api_res = asyncio.run(miniwechat_get_feiassistid())
-        # print(get_fetassistid_api_res)
+        # debugLog(get_fetassistid_api_res)
         self.feiassistid = generate_object_id()
-        print(self.feiassistid)
+        # debugLog(self.feiassistid)
         self.local_ip = get_local_ip()
 
         qr_exists = self.file_manager.check_qr_code_existence(self.feiassistid)
@@ -64,15 +65,18 @@ class LoginPage(wx.Frame):
                 "ip": self.local_ip
             })
             link = f"http://miniwechat.iflying.com/api/externalAppHome?state={state}"
-            print(link)
+            # debugLog(link)
             # 创建 QRCodeGenerator 实例
             generator = QRCodeGenerator(link=link, fei_id=self.feiassistid)
             # 调用 generate_qr_code 方法生成二维码
             generator.generate_qr_code()
 
+        # 实例化SocketHandler类
+        self.socket_handler = socketHandle(f"{self.feiassistid}{self.local_ip}", None)
+
         # 创建并启动新线程以监听事件
-        self.thread = threading.Thread(target=self.start_socket_listener, args=(f"{self.feiassistid}{self.local_ip}",))
-        self.thread.start()
+        self.socket_thread = threading.Thread(target=self.start_socket_listener)
+        self.socket_thread.start()
 
         # 在窗口中央放置二维码
         qr_path = f"assets/qrCode{self.feiassistid}.png"
@@ -100,8 +104,12 @@ class LoginPage(wx.Frame):
             self.ReleaseMouse()
 
     def OnCloseButtonClick(self, event):
+        self.socket_handler.disconnect()
         self.file_manager.delete_files_with_name("assets", "qrCode")
         self.Destroy()
+
+        # 结束应用程序的主事件循环
+        wx.App.Get().ExitMainLoop()
 
     def OnButtonEnter(self, event):
         self.close_button.SetBackgroundColour(wx.Colour(251, 115, 115))
@@ -113,12 +121,9 @@ class LoginPage(wx.Frame):
         self.close_button.SetBackgroundColour(wx.Colour(245, 245, 245))
         self.close_button.SetForegroundColour(wx.Colour(0, 0, 0))
 
-    def start_socket_listener(self, feiassistid):
-        print(feiassistid)
-        # 实例化SocketHandler类
-        socket_handler = socketHandle()
+    def start_socket_listener(self):
         # 开始监听事件
-        socket_handler.openSocket(self.handle_message, feiassistid)
+        self.socket_handler.openSocket(self.handle_message)
 
     def handle_message(self, data):
         self.file_manager.update_login_list(data['data']['userid'], data['data'])
@@ -129,5 +134,6 @@ class LoginPage(wx.Frame):
         wx.CallAfter(self.close_and_open_fei_assist_page)
 
     def close_and_open_fei_assist_page(self):
+        self.socket_handler.disconnect()
         self.Destroy()  # 销毁当前窗口
         self.callback()

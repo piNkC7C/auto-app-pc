@@ -2,38 +2,58 @@ import time
 
 import socketio
 
+from log.log_record import debugLog
+
 
 class socketHandle:
-    def openSocket(self, func, feiassistid):
-        sio = socketio.Client()
+    def __init__(self, socket_id, deal_no_web):
+        self.is_human = False
+        self.socket_id = socket_id
+        self.sio = socketio.Client()
 
-        @sio.on('connect')
+        @self.sio.on('connect')
         def on_connect():
-            print("client connect")
-            sio.emit("UserId", feiassistid)
+            debugLog(f"client {self.socket_id} connect")
+            self.sio.emit("UserId", self.socket_id)
 
-        @sio.on('disconnect')
+        @self.sio.on('disconnect')
         def on_disconnect():
-            print('disconnected from server')
+            if self.is_human:
+                debugLog('手动断开')
+                debugLog(f'{self.socket_id} disconnected from server')
+            else:
+                debugLog('断网了')
+                debugLog(f'{self.socket_id} disconnected from server')
+                if deal_no_web:
+                    deal_no_web(False)
 
+        self.sio.connect('http://124.71.179.1:4745')
+
+    def openSocket(self, func):
         # 注册回调函数
-        @sio.on('seekAdvice')
+        @self.sio.on('seekAdvice')
         def on_message(data):
-            print('收到服务器消息: ', data)
+            debugLog('收到服务器消息: ')
+            debugLog(str(data))
             func(data)
 
-        @sio.on(feiassistid)
+        @self.sio.on(self.socket_id)
         def on_message(data):
+            debugLog(f'{self.socket_id}消息: ')
+            debugLog(data)
             func(data)
             # 停止监听 feiassistid 事件
-            sio.disconnect()
+            self.sio.disconnect()
 
-        sio.connect('http://124.71.179.1:4745')
+        self.sio.wait()
 
-        sio.wait()
+    def disconnect(self):
+        self.is_human = True
+        # 断开 socket 连接
+        self.sio.disconnect()
 
 # socket_handler = socketHandle()
 # def handle_message(data):
-#     print("Received message:", data)
+#     debugLog("Received message:", data)
 #
 # socket_handler.openSocket(handle_message)

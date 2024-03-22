@@ -1,7 +1,13 @@
 import pika
 import json
+import time
+import asyncio
 from datetime import datetime
 from tools.fileOperate import File
+from log.log_record import debugLog
+from api.qwcosplayApi import qwcosplay_task_start, qwcosplay_task_finish, qwcosplay_task_interrupt, \
+    qwcosplay_user_watch_status
+from datetime import datetime
 
 
 class MessageQueueManager:
@@ -19,64 +25,153 @@ class MessageQueueManager:
         parameters = pika.ConnectionParameters(self.hostname, self.port, '/', credentials)
         return pika.BlockingConnection(parameters)
 
-    def insert_message_task(self, task, queue):
-        connection = self.connect()
-        channel = connection.channel()
-        channel.queue_declare(queue=queue, durable=True)
+    def insert_message_task(self, task, queue, deal_err, deal_noerr):
+        connection = None
+        circle = True
+        while circle:
+            try:
+                connection = self.connect()
+            except Exception as e:
+                deal_err()
+                debugLog("连接消息队列时出错:")
+                debugLog(str(e))
+                # 释放之前的连接资源
+                if connection:
+                    connection.close()
+                # 休眠一段时间后重试连接
+                time.sleep(10)  # 休眠10秒后重试连接
 
-        channel.basic_publish(
-            exchange='',
-            routing_key=queue,
-            body=json.dumps(task),
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # make message persistent
-            )
-        )
-        print("任务创建完成，关闭连接")
-        connection.close()
+            try:
+                if connection:
+                    circle = False
+                    channel = connection.channel()
+                    channel.queue_declare(queue=queue, durable=True)
 
-    def consume_message_task(self, queue, deal_task, consume_state):
-        connection = self.connect()
-        channel = connection.channel()
-        # channel.queue_declare(queue=queue, durable=True)
-        channel.basic_qos(prefetch_count=1)
+                    channel.basic_publish(
+                        exchange='',
+                        routing_key=queue,
+                        body=json.dumps(task),
+                        properties=pika.BasicProperties(
+                            delivery_mode=2,  # make message persistent
+                        )
+                    )
+                    # deal_noerr()
+                    debugLog("任务创建完成，关闭连接")
+                    connection.close()
+            except Exception as e:
+                # circle = True
+                # deal_err()
+                debugLog("消息队列出错:")
+                debugLog(str(e))
+                # 释放之前的连接资源
+                if connection:
+                    connection.close()
+                # 休眠一段时间后重试连接
+                time.sleep(10)  # 休眠10秒后重试连接
 
-        def callback(ch, method, properties, body):
-            print(f"{queue}收到任务")
-            # task = body.decode('utf-8')
-            task = json.loads(body.decode('utf-8'))
-            deal_task(task)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
+    def consume_message_task(self, queue, deal_task, consume_state, deal_err, deal_noerr, userid):
+        connection = None
+        circle = True
+        while circle:
+            try:
+                connection = self.connect()
+            except Exception as e:
+                deal_err()
+                debugLog("连接消息队列时出错:")
+                debugLog(str(e))
+                # 释放之前的连接资源
+                if connection:
+                    connection.close()
+                # 休眠一段时间后重试连接
+                time.sleep(10)  # 休眠10秒后重试连接
+                debugLog("尝试重新连接")
 
-        tag = channel.basic_consume(queue=queue, on_message_callback=callback)
-        print(tag)
-        index = next((i for i, obj in enumerate(self.consumer_tag) if getattr(obj, 'queue', None) == queue), None)
-        print(index)
-        # if index is None:
-        self.consumer_tag.append({
-            "queue": queue,
-            "connection": connection,
-            "channel": channel,
-            "consumer_tag": tag,
-        })
-        print(f"{queue}等待任务...")
-        channel.start_consuming()
+            try:
+                if connection:
+                    circle = False
+                    channel = connection.channel()
+                    # channel.queue_declare(queue=queue, durable=True)
+                    channel.basic_qos(prefetch_count=1)
+
+                    def callback(ch, method, properties, body):
+                        debugLog(f"{queue}收到任务")
+                        try:
+                            # task = body.decode('utf-8')
+                            task_json = json.loads(body.decode('utf-8'))
+                            debugLog(task_json)
+                            external_id = task_json['externalId']
+                            external_res = asyncio.run(qwcosplay_user_watch_status(external_id, userid))
+                            debugLog("验证客户是否监管")
+                            debugLog(external_res)
+                            if external_res['code'] == 200:
+                                if external_res['data'] == 1:
+                                    task_list = task_json['task_list']
+                                    for task in task_list:
+                                        debugLog("开始")
+                                        asyncio.run(qwcosplay_task_start(task['_id'], datetime.now()))
+                                        task_res = deal_task(task)
+                                        if task_res is True:
+                                            if task['waitTime'] != 0:
+                                                time.sleep(task['waitTime'])
+                                            debugLog("结束")
+                                            asyncio.run(qwcosplay_task_finish(task['_id'], datetime.now()))
+                                        else:
+                                            debugLog(f"任务未完成{task_res}")
+                                            asyncio.run(qwcosplay_task_finish(task['_id'], datetime.now(), task_res))
+                        except Exception as deal_task_error:
+                            # deal_err()
+                            debugLog("处理队列任务时出错:")
+                            debugLog(str(deal_task_error))
+
+                        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+                    tag = channel.basic_consume(queue=queue, on_message_callback=callback)
+                    debugLog(f"队列tag：{tag}")
+                    index = next((i for i, obj in enumerate(self.consumer_tag) if getattr(obj, 'queue', None) == queue),
+                                 None)
+                    # if index is None:
+                    self.consumer_tag.append({
+                        "queue": queue,
+                        "connection": connection,
+                        "channel": channel,
+                        "consumer_tag": tag,
+                    })
+                    # deal_noerr()
+                    debugLog(f"{queue}等待任务...")
+                    try:
+                        channel.start_consuming()
+                    except Exception as e:
+                        debugLog(str(e))
+            except Exception as e:
+                # circle = True
+                # deal_err()
+                debugLog("消息队列出错:")
+                debugLog(str(e))
+                # 释放之前的连接资源
+                if connection:
+                    connection.close()
+                # 休眠一段时间后重试连接
+                time.sleep(10)  # 休眠10秒后重试连接
 
     def stop_consume_message_task(self, queue):
-        print(queue)
-        print(self.consumer_tag)
-        for index, tag in enumerate(self.consumer_tag):
-            if tag["queue"] == queue:
-                print(f"{queue}关闭消费...")
-                tag["channel"].basic_cancel(tag["consumer_tag"])
-                # 关闭连接
-                # tag["connection"].close()
-                self.consumer_tag.pop(index)
-                print(self.consumer_tag)
+        try:
+            # debugLog(queue)
+            # debugLog(self.consumer_tag)
+            if self.consumer_tag.__len__() != 0:
+                for index, tag in enumerate(self.consumer_tag):
+                    if tag["queue"] == queue:
+                        debugLog(f"{queue}关闭消费...")
+                        tag["channel"].basic_cancel(tag["consumer_tag"])
+                        # 关闭连接
+                        self.consumer_tag.pop(index)
+                        debugLog(f"删除队列tag：{tag['consumer_tag']}")
+        except Exception as e:
+            debugLog("停止消费队列时出错:")
+            debugLog(str(e))
 
     def delete_message_task(self, queue):
         connection = self.connect()
         channel = connection.channel()
         channel.queue_delete(queue=queue)
-        print(f"队列 {queue} 已成功删除")
+        debugLog(f"队列 {queue} 已成功删除")
         connection.close()

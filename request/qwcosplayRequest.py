@@ -1,11 +1,13 @@
 import requests
+import wx
 
 from log.log_record import debugLog
 
-class MiniWechatRequest:
+
+class QWCosplayRequest:
     def __init__(self):
-        self.base_url = "http://miniwechat.iflying.com/api"
-        # self.base_url = "http://127.0.0.1:4745/api"
+        # self.base_url = "http://qwcosplay.iflying.com"
+        self.base_url = "http://172.16.61.31:7094"
         self.timeout = 10
 
     def request(self, method, url, **kwargs):
@@ -17,7 +19,11 @@ class MiniWechatRequest:
         except requests.exceptions.RequestException as e:
             debugLog("An error occurred during request:")
             debugLog(str(e))
-            return None
+            wx.MessageBox("qwcosplay.iflying.com接口报错，请联系管理员！", "提示", wx.OK | wx.ICON_INFORMATION)
+            return {
+                "code": 999,
+                "message": str(e)
+            }
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)

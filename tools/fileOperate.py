@@ -2,6 +2,9 @@ import os
 import json
 import urllib.parse
 import sys
+import requests
+
+from log.log_record import debugLog
 
 
 def custom_open(file_path, mode='r'):
@@ -54,7 +57,8 @@ class File(object):
         # 取出并打印 loginInfo
         with custom_open(login_info_path, "r") as f:
             login_info = json.load(f)
-            print("Login Info:", login_info)
+            debugLog("Login Info:")
+            debugLog(login_info)
 
     def update_login_list(self, userid, login_info):
         login_list_path = os.path.join("FeiAssistData", "LoginList")
@@ -98,9 +102,9 @@ class File(object):
     def delete_file(self, file_path):
         try:
             os.remove(file_path)
-            print(f"文件 {file_path} 删除成功")
+            debugLog(f"文件 {file_path} 删除成功")
         except Exception as e:
-            print(f"删除文件 {file_path} 失败：{e}")
+            debugLog(f"删除文件 {file_path} 失败：{e}")
 
     def delete_files_with_name(self, directory, name):
         # 遍历目录中的文件
@@ -111,4 +115,47 @@ class File(object):
                 filepath = os.path.join(directory, filename)
                 # 删除文件
                 os.remove(filepath)
-                print(f"已删除文件: {filepath}")
+                debugLog(f"已删除文件: {filepath}")
+
+    def get_json_info_by_folder(self, path_list):
+        # 构建文件夹路径
+        folder_path = os.path.join(*path_list[:-1])
+        # 如果文件夹路径不存在，则创建它
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        # 获取 JSON 文件路径
+        json_file_path = os.path.join(folder_path, path_list[-1])
+        # 如果 JSON 文件不存在，则创建一个空的 JSON 文件
+        if not os.path.exists(json_file_path):
+            with open(json_file_path, "w") as f:
+                json.dump([], f)  # 写入一个空数组到文件中
+                return []  # 返回一个空数组作为初始数据
+        else:
+            with open(json_file_path, "r") as f:
+                json_info = json.load(f)
+                return json_info
+
+    def write_json_info_by_folder(self, path_list, data_to_write):
+        # 构建文件夹路径
+        folder_path = os.path.join(*path_list[:-1])
+        # 如果文件夹路径不存在，则创建它
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        # 获取 JSON 文件路径
+        json_file_path = os.path.join(folder_path, path_list[-1])
+        with open(json_file_path, "w") as f:
+            json.dump(data_to_write, f)  # 写入数据到文件中
+            return data_to_write
+
+    def download_image(self, url, name, path_list):
+        # 构建文件夹路径
+        save_path = os.path.join(*path_list)
+        try:
+            response = requests.get(url)
+            if os.path.exists(save_path):
+                os.remove(save_path)  # 如果文件已经存在，删除文件
+            with open(save_path, 'wb') as f:
+                f.write(response.content)
+            debugLog(f"{name}已保存到：{save_path}")
+        except Exception as e:
+            debugLog(f"保存图片时出错：{str(e)}")

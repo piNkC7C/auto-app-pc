@@ -1,6 +1,8 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import queue
+import os
+
 
 # def initLog():
 #     logger = logging.getLogger("feiyang")
@@ -39,8 +41,13 @@ def initLog():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
+    # 创建"log"目录，如果不存在的话
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+
     # 创建文件处理器
-    file_handler = TimedRotatingFileHandler(filename="info.log", when="D", interval=1, backupCount=3)
+    file_handler = TimedRotatingFileHandler(filename=os.path.join(log_dir, "info.log"), when="D", interval=1,
+                                            backupCount=3)
     file_handler.setLevel(logging.DEBUG)
 
     # 创建格式化器
@@ -58,7 +65,9 @@ def initLog():
     queue_listener = logging.handlers.QueueListener(log_queue, file_handler)
     queue_listener.start()
 
+
 def debugLog(log):
+    print(log)
     # 开始打日志
-    logger = logging.getLogger("feiyang")
+    logger = logging.getLogger(__name__)
     logger.debug(log)

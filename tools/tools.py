@@ -5,6 +5,8 @@ import time
 import random
 import string
 
+from log.log_record import debugLog
+
 
 class CustomButton(wx.Button):
     def __init__(self, parent, label, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
@@ -36,6 +38,7 @@ class CustomSwitch(wx.Panel):
             self.callback(not self.active)
 
     def refresh_switch(self, status):
+        # debugLog(status)
         self.active = status
         self.Refresh()
 
@@ -84,7 +87,7 @@ class MyThread(threading.Thread):
             while self.running.is_set():
                 self.target_function(*self.args)
         except Exception as e:
-            print(f"Error occurred in thread: {e}")  # 可以根据需要扩展错误处理逻辑
+            debugLog(f"Error occurred in thread: {e}")  # 可以根据需要扩展错误处理逻辑
         finally:
             self.running.clear()
 
