@@ -12,16 +12,20 @@ from tools.globalListener import GlobalListener
 from gui import APP
 from .online import OnLinePage, OnAIPage, OffAIPage
 from log.log_record import debugLog
-from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status
+from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status, qwcosplay_get_check_company_task
 from .components.message import MessageBox
 
 
 class MyTaskBarIcon(TaskBarIcon):
     def __init__(self, frame):
+        app_file_manager = File()
+        app_config = app_file_manager.get_file_data_rb("assets/app.json")
+        app_name = app_config["app_name"]
+        app_ico = app_config["app_ico"]
         TaskBarIcon.__init__(self)
         self.frame = frame
 
-        self.icon = wx.Icon('iflying.ico', wx.BITMAP_TYPE_ICO)
+        self.icon = wx.Icon(app_ico, wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon, "小飞托管")
         # 创建一个菜单
         self.menu = wx.Menu()
@@ -53,10 +57,8 @@ class MyTaskBarIcon(TaskBarIcon):
             pass
 
     def OnTaskBarRightUp(self, event):
-
         # 显示菜单
         self.PopupMenu(self.menu)
-        self.menu.Destroy()
 
     def OnOpenFei(self, event):
         self.frame.get_fei_switch_state(True)
@@ -67,9 +69,7 @@ class MyTaskBarIcon(TaskBarIcon):
     def OnDestroyFei(self, event):
         clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
         debugLog(clear_res)
-        if clear_res['code'] == 999:
-            return
-        else:
+        if clear_res['code'] == 200:
             self.frame.get_fei_switch_state(False)
             self.frame.all_close()
             self.frame.Destroy()
@@ -87,7 +87,11 @@ class MyTaskBarIcon(TaskBarIcon):
 
 class FeiAssistPage(wx.Frame):
     def __init__(self, callback):
-        super().__init__(None, title="小飞助理", size=(550, 470), style=wx.NO_BORDER)
+        app_file_manager = File()
+        app_config = app_file_manager.get_file_data_rb("assets/app.json")
+        app_name = app_config["app_name"]
+        app_ico = app_config["app_ico"]
+        super().__init__(None, title=app_name, size=(550, 470), style=wx.NO_BORDER)
         self.callback = callback
         self.SetBackgroundColour(wx.Colour(245, 245, 245))  # 设置窗口背景颜色为白色
         self.font12 = wx.Font(wx.FontInfo(12).FaceName('Microsoft YaHei UI'))
@@ -110,7 +114,7 @@ class FeiAssistPage(wx.Frame):
         self.title_bar.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
         # 创建标题文本
-        self.title_text = wx.StaticText(self.title_bar, label="小飞助理", pos=(10, 5))
+        self.title_text = wx.StaticText(self.title_bar, label=app_name, pos=(10, 5))
         self.title_text.SetForegroundColour(wx.Colour(167, 166, 170))
 
         # 创建关闭按钮
@@ -202,87 +206,300 @@ class FeiAssistPage(wx.Frame):
             self.ReleaseMouse()
 
     def OnCloseButtonClick(self, event):
-        # wx.MessageBox("托管开启失败,请检查是否已在其他地方开启托管!", "提示", wx.OK | wx.ICON_INFORMATION)
-        # self.Close()
         # self.taskbar_show = False
         # self.Show(False)
-        self.message_queue_manager.insert_message_task({
-            "taskList": [{"id": "1",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "search"
-                          },
-                          "waitTime": 2,
-                          "isCircle": 0,
-                          },
-                         {"id": "2",
-                          "action": "paste",
-                          "actObjType": "text",
-                          "text": {
-                              "content": "勒翁龙",
-                          },
-                          "waitTime": 2,
-                          "isCircle": 0,
-                          },
-                         {"id": "3",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "external"
-                          },
-                          "waitTime": 2,
-                          "isCircle": 0,
-                          },
-                         {"id": "4",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "help"
-                          },
-                          "waitTime": 2,
-                          "isCircle": 0,
-                          },
-                         {"id": "5",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "xiaofei"
-                          },
-                          "waitTime": 2,
-                          "isCircle": 0,
-                          },
-                         {"id": "6",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "zixun"
-                          },
-                          "waitTime": 2,
-                          "isCircle": 0,
-                          },
-                         {"id": "7",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "line"
-                          },
-                          "waitTime": 5,
-                          "isCircle": 0,
-                          },
-                         {"id": "8",
-                          "action": "move_click",
-                          "actObjType": "image",
-                          "image": {
-                              "picName": "sendmsg"
-                          },
-                          "waitTime": 2,
-                          "isCircle": 1,
-                          },
-                         ],
+        self.app_instance.deal_task_json({
+            "id": "660240d620ff6b1d15e85036",
+            "taskList": [
+                {
+                    "_id": "6600e6e317672e631d388efd",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 20,
+                    "instructionName": "验证未激活X",
+                    "action": "verify",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search_x",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 4,
+                    "waitTime": 2,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "6600e6e317672e631d388efe",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 21,
+                    "instructionName": "验证激活X",
+                    "action": "verify",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search_x_act",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 4,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7dfb494be2f74c49301",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 22,
+                    "instructionName": "验证未激活搜索框",
+                    "action": "verify",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 4,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fae4b0b494be2f74c492f7",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 1,
+                    "instructionName": "验证激活搜索框",
+                    "action": "verify",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search_act",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 4,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "6600e6e317672e631d388f03",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 25,
+                    "instructionName": "跳过后续所有步骤",
+                    "action": "skip",
+                    "actObjType": "all",
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7b8b494be2f74c492ff",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 2,
+                    "instructionName": "点击未激活X删除搜索内容",
+                    "action": "move_click",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search_x",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 3,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "6600e6e317672e631d388f01",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 23,
+                    "instructionName": "点击激活X删除搜索内容",
+                    "action": "verify",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search_x_act",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 2,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7ceb494be2f74c49300",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 3,
+                    "instructionName": "点击未激活搜索框",
+                    "action": "move_click",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 1,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "6600e6e317672e631d388f02",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 24,
+                    "instructionName": "点击激活搜索框",
+                    "action": "move_click",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "search_act",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7f2b494be2f74c49305",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 8,
+                    "instructionName": "粘贴文字",
+                    "action": "paste",
+                    "actObjType": "text",
+                    "text": {
+                        "content": "勒翁龙"
+                    },
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7e4b494be2f74c49302",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 5,
+                    "instructionName": "验证联系人状态",
+                    "action": "verify",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "contact",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 1,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "6600e6e317672e631d388f03",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 25,
+                    "instructionName": "跳过后续所有步骤",
+                    "action": "skip",
+                    "actObjType": "all",
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7e8b494be2f74c49303",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 6,
+                    "instructionName": "点击客户",
+                    "action": "move_click",
+                    "actObjType": "position",
+                    "position": {
+                        "x": 100,
+                        "y": 100
+                    },
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+
+                #     发送文字消息
+                {
+                    "_id": "65fbf80ab494be2f74c49309",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 12,
+                    "instructionName": "点击聊天框",
+                    "action": "move_click",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "chatroom",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7f2b494be2f74c49305",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 8,
+                    "instructionName": "粘贴文字",
+                    "action": "paste",
+                    "actObjType": "text",
+                    "text": {
+                        "content": "测试测试测试"
+                    },
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                },
+                {
+                    "_id": "65fbf7f8b494be2f74c49306",
+                    "type": 0,
+                    "saleId": "",
+                    "instructionNo": 9,
+                    "instructionName": "点击发送",
+                    "action": "move_click",
+                    "actObjType": "image",
+                    "image": {
+                        "picName": "sendmsg",
+                        "picConfidence": 0.8,
+                        "picLeft": 0.5,
+                        "picTop": 0.5
+                    },
+                    "skipTimes": 0,
+                    "waitTime": 0,
+                    "circleCount": 0,
+                    "circleWaitTime": 0
+                }
+            ],
             "externalId": "wmu-p0CwAAMF9gDChOhuPIY-9qqSWTMw"
-        }, "Fei_ZhangShiJie", self.deal_queue_error,
-            self.deal_queue_no_error)
+        }, self.info['userid'])
         # pass
 
     def OnButtonEnter(self, event):
@@ -364,9 +581,7 @@ class FeiAssistPage(wx.Frame):
 
     def close_and_open_login_page(self):
         clear_res = asyncio.run(qwcosplay_clear_all_task(self.info['userid']))
-        if clear_res['code'] == 999:
-            return
-        else:
+        if clear_res['code'] == 200:
             self.taskbar_icon.OnChangeFei(self.taskbar_icon.destroy_item)
             self.callback()
 
@@ -398,7 +613,7 @@ class FeiAssistPage(wx.Frame):
             # listener_thread = threading.Thread(target=global_listener.start_listening)
             # listener_thread.start()
             consume_thread = threading.Thread(target=self.message_queue_manager.consume_message_task,
-                                              args=(queue, self.app_instance.deal_task, True,
+                                              args=(queue, self.app_instance.deal_task_json, True,
                                                     self.deal_queue_error, self.deal_queue_no_error,
                                                     self.info['userid'],))
             consume_thread.start()
@@ -408,22 +623,31 @@ class FeiAssistPage(wx.Frame):
     def get_fei_switch_state(self, switch):
         self.fei_status = switch
         if switch:
-            change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 1))
-            if change_res['code'] == 200:
-                open_res = self.app_instance.openQW(1, 3, 5)
+            company_check = asyncio.run(qwcosplay_get_check_company_task())
+            debugLog("获取验证企业任务")
+            debugLog(company_check)
+            if company_check['code'] == 200:
+                open_res = self.app_instance.deal_task_list(company_check['data'], 1, 1)
                 if open_res:
-                    self.switch.refresh_switch(switch)
-                    self.status_page_show('onAI')
-                    self.start_threading(f"Fei_{self.info['userid']}", switch)
-                    # self.message_queue_manager.insert_message_task({
-                    #     "UserId": self.info["userid"],
-                    #     "Status": 1
-                    # }, "feiAssistStatus", self.deal_queue_error)
-            else:
-                wx.MessageBox("托管开启失败,请检查是否已在其他地方开启托管!", "提示", wx.OK | wx.ICON_INFORMATION)
+                    change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 1))
+                    if change_res['code'] == 200:
+                        debugLog("准备打开托管")
+                        self.app_instance.fei_status = switch
+                        self.switch.refresh_switch(switch)
+                        self.status_page_show('onAI')
+                        self.start_threading(f"Fei_{self.info['userid']}", switch)
+                        # self.message_queue_manager.insert_message_task({
+                        #     "UserId": self.info["userid"],
+                        #     "Status": 1
+                        # }, "feiAssistStatus", self.deal_queue_error)
+                    else:
+                        wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
+                else:
+                    wx.MessageBox(f"打开企业微信失败", "提示", wx.OK | wx.ICON_INFORMATION)
         else:
             change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 0))
             if change_res['code'] == 200:
+                self.app_instance.fei_status = switch
                 self.switch.refresh_switch(switch)
                 self.status_page_show('online')
                 self.start_threading(f"Fei_{self.info['userid']}", switch)
@@ -433,7 +657,7 @@ class FeiAssistPage(wx.Frame):
                 # }, "feiAssistStatus", self.deal_queue_error)
                 # self.message_queue_manager.stop_consume_message_task(self.info["userid"])
             else:
-                wx.MessageBox("托管关闭失败!", "提示", wx.OK | wx.ICON_INFORMATION)
+                wx.MessageBox(f"托管关闭失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
 
     def all_close(self):
         self.app_instance.Destroy()

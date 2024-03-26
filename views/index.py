@@ -7,7 +7,7 @@ from .feiassist import FeiAssistPage
 from tools.fileOperate import File
 from tools.socketHandle import socketHandle
 from log.log_record import debugLog
-from api.miniwechatApi import miniwechat_get_feiassistpic
+from api.miniwechatApi import miniwechat_get_feiassistpic, miniwechat_check_login_status
 
 
 class IndexPage(wx.Frame):
@@ -17,16 +17,21 @@ class IndexPage(wx.Frame):
         self.file_manager = File()
         oldPicList = self.file_manager.get_json_info_by_folder(['assets', 'images.json'])
         picList = asyncio.run(miniwechat_get_feiassistpic(oldPicList))
-        if picList['data'].__len__() > 0:
-            # debugLog(picList['data'])
-            newPicList = self.file_manager.write_json_info_by_folder(['assets', 'images.json'], picList['data'])
-            for pic in newPicList:
-                self.file_manager.download_image(pic['PicUrl'], pic['PicName'], ['res', pic['PicName']])
-        logged_in = self.file_manager.check_login_info()
-        if logged_in:
-            self.show_fei_assist_page()
-        else:
-            self.show_login_page()
+        if picList['code'] == 0:
+            if picList['data'].__len__() > 0:
+                # debugLog(picList['data'])
+                newPicList = self.file_manager.write_json_info_by_folder(['assets', 'images.json'], picList['data'])
+                for pic in newPicList:
+                    self.file_manager.download_image(pic['PicUrl'], pic['PicName'], ['res', pic['PicName']])
+        self.info = self.file_manager.get_login_info()
+        check_res = asyncio.run(miniwechat_check_login_status(self.info))
+        debugLog("登陆验证结果")
+        debugLog(check_res)
+        if check_res['code'] == 0:
+            if check_res['data'] == '验证成功':
+                self.show_fei_assist_page()
+            else:
+                self.show_login_page()
 
     def show_fei_assist_page(self):
         self.Show(False)  # 隐藏主页窗口

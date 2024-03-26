@@ -1,5 +1,5 @@
 {
-  "hostname": "124.71.164.184",
+  "hostname": "172.16.61.31",
   "port": 5672,
   "username": "iflying",
   "password": "mq_iflying_2019"

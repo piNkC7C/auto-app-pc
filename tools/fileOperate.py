@@ -93,6 +93,13 @@ class File(object):
                 return file_data
         return None
 
+    def get_file_data_rb(self, path):
+        if os.path.exists(path):
+            with open(path, 'rb') as f:
+                file_data = json.loads(f.read().decode('utf-8'))
+                return file_data
+        return None
+
     def get_current_directory(self):
         # 获取当前可执行文件所在目录
         exe_file = sys.argv[0]

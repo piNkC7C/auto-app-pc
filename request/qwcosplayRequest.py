@@ -1,19 +1,27 @@
 import requests
 import wx
+from requests.auth import HTTPBasicAuth
 
 from log.log_record import debugLog
+
+from tools.fileOperate import File
 
 
 class QWCosplayRequest:
     def __init__(self):
         # self.base_url = "http://qwcosplay.iflying.com"
         self.base_url = "http://172.16.61.31:7094"
-        self.timeout = 10
+        self.timeout = 120
+        self.file_manager = File()
 
     def request(self, method, url, **kwargs):
         full_url = self.base_url + url
         try:
-            response = requests.request(method, full_url, timeout=self.timeout, **kwargs)
+            info = self.file_manager.get_login_info()
+            # debugLog(info)
+            response = requests.request(method, full_url, timeout=self.timeout,
+                                        auth=HTTPBasicAuth(f"{info['feiassistid']}", info['feiassistauth']),
+                                        **kwargs)
             response.raise_for_status()  # 检查请求是否成功
             return response.json()
         except requests.exceptions.RequestException as e:

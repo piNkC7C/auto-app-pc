@@ -46,7 +46,6 @@ class MessageQueueManager:
                     circle = False
                     channel = connection.channel()
                     channel.queue_declare(queue=queue, durable=True)
-
                     channel.basic_publish(
                         exchange='',
                         routing_key=queue,
@@ -99,25 +98,7 @@ class MessageQueueManager:
                             # task = body.decode('utf-8')
                             task_json = json.loads(body.decode('utf-8'))
                             debugLog(task_json)
-                            external_id = task_json['externalId']
-                            external_res = asyncio.run(qwcosplay_user_watch_status(external_id, userid))
-                            debugLog("验证客户是否监管")
-                            debugLog(external_res)
-                            if external_res['code'] == 200:
-                                if external_res['data'] == 1:
-                                    task_list = task_json['task_list']
-                                    for task in task_list:
-                                        debugLog("开始")
-                                        asyncio.run(qwcosplay_task_start(task['_id'], datetime.now()))
-                                        task_res = deal_task(task)
-                                        if task_res is True:
-                                            if task['waitTime'] != 0:
-                                                time.sleep(task['waitTime'])
-                                            debugLog("结束")
-                                            asyncio.run(qwcosplay_task_finish(task['_id'], datetime.now()))
-                                        else:
-                                            debugLog(f"任务未完成{task_res}")
-                                            asyncio.run(qwcosplay_task_finish(task['_id'], datetime.now(), task_res))
+                            deal_task(task_json, userid)
                         except Exception as deal_task_error:
                             # deal_err()
                             debugLog("处理队列任务时出错:")

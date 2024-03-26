@@ -15,7 +15,11 @@ from log.log_record import debugLog
 
 class LoginPage(wx.Frame):
     def __init__(self, callback):
-        super().__init__(None, title="小飞助理", size=(280, 380), style=wx.NO_BORDER)
+        app_file_manager = File()
+        app_config = app_file_manager.get_file_data_rb("assets/app.json")
+        app_name = app_config["app_name"]
+        app_ico = app_config["app_ico"]
+        super().__init__(None, title=app_name, size=(280, 380), style=wx.NO_BORDER)
         self.callback = callback
         self.SetBackgroundColour(wx.Colour(245, 245, 245))  # 设置窗口背景颜色为白色
 
@@ -28,7 +32,7 @@ class LoginPage(wx.Frame):
         self.title_bar.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
         # 创建标题文本
-        self.title_text = wx.StaticText(self.title_bar, label="小飞助理", pos=(10, 5))
+        self.title_text = wx.StaticText(self.title_bar, label=app_name, pos=(10, 5))
         self.title_text.SetForegroundColour(wx.Colour(167, 166, 170))
 
         # 创建关闭按钮
@@ -64,7 +68,9 @@ class LoginPage(wx.Frame):
                 "id": self.feiassistid,
                 "ip": self.local_ip
             })
-            link = f"http://miniwechat.iflying.com/api/externalAppHome?state={state}"
+            # link = f"http://miniwechat.iflying.com/api/externalAppHome?state={state}"
+            link = f"http://172.16.61.6:4745/api/externalAppHome?state={state}"
+
             # debugLog(link)
             # 创建 QRCodeGenerator 实例
             generator = QRCodeGenerator(link=link, fei_id=self.feiassistid)
@@ -126,7 +132,7 @@ class LoginPage(wx.Frame):
         self.socket_handler.openSocket(self.handle_message)
 
     def handle_message(self, data):
-        self.file_manager.update_login_list(data['data']['userid'], data['data'])
+        # self.file_manager.update_login_list(data['data']['userid'], data['data'])
         self.file_manager.update_login_info(data['data'])
         self.file_manager.delete_files_with_name("assets", "qrCode")
         # self.file_manager.delete_file(f"assets/qrCode{self.feiassistid}.png")
