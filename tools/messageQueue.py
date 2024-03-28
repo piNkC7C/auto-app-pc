@@ -96,7 +96,10 @@ class MessageQueueManager:
                         debugLog(f"{queue}收到任务")
                         try:
                             # task = body.decode('utf-8')
+                            debugLog("队列消息原型")
+                            debugLog(body)
                             task_json = json.loads(body.decode('utf-8'))
+                            # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
                             debugLog(task_json)
                             deal_task(task_json, userid)
                         except Exception as deal_task_error:

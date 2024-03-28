@@ -27,8 +27,8 @@ class socketHandle:
                 if deal_no_web:
                     deal_no_web(False)
 
-        # self.sio.connect('http://124.71.179.1:4745')
-        self.sio.connect('http://172.16.61.6:4745')
+        self.sio.connect('http://124.71.179.1:4745')
+        # self.sio.connect('http://172.16.61.6:4745')
 
     def openSocket(self, func):
         # 注册回调函数

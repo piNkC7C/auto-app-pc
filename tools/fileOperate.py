@@ -150,11 +150,16 @@ class File(object):
             os.makedirs(folder_path)
         # 获取 JSON 文件路径
         json_file_path = os.path.join(folder_path, path_list[-1])
-        with open(json_file_path, "w") as f:
-            json.dump(data_to_write, f)  # 写入数据到文件中
+        with open(json_file_path, "w", encoding="utf-8") as f:  # 设置编码为utf-8
+            json.dump(data_to_write, f, ensure_ascii=False)  # 写入数据到文件中，ensure_ascii设置为False
             return data_to_write
 
     def download_image(self, url, name, path_list):
+        # 构建文件夹路径
+        folder_path = os.path.join(*path_list[:-1])
+        # 如果文件夹路径不存在，则创建它
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
         # 构建文件夹路径
         save_path = os.path.join(*path_list)
         try:

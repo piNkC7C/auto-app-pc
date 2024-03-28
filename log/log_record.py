@@ -47,7 +47,7 @@ def initLog():
 
     # 创建文件处理器
     file_handler = TimedRotatingFileHandler(filename=os.path.join(log_dir, "info.log"), when="D", interval=1,
-                                            backupCount=3)
+                                            backupCount=3, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
 
     # 创建格式化器

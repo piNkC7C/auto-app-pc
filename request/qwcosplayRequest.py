@@ -9,8 +9,8 @@ from tools.fileOperate import File
 
 class QWCosplayRequest:
     def __init__(self):
-        # self.base_url = "http://qwcosplay.iflying.com"
-        self.base_url = "http://172.16.61.31:7094"
+        self.base_url = "http://qwcosplay.iflying.com/api"
+        # self.base_url = "http://172.16.61.31:7094"
         self.timeout = 120
         self.file_manager = File()
 
@@ -25,6 +25,7 @@ class QWCosplayRequest:
             response.raise_for_status()  # 检查请求是否成功
             return response.json()
         except requests.exceptions.RequestException as e:
+            print(e)
             debugLog("An error occurred during request:")
             debugLog(str(e))
             wx.MessageBox("qwcosplay.iflying.com接口报错，请联系管理员！", "提示", wx.OK | wx.ICON_INFORMATION)

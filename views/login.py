@@ -68,8 +68,8 @@ class LoginPage(wx.Frame):
                 "id": self.feiassistid,
                 "ip": self.local_ip
             })
-            # link = f"http://miniwechat.iflying.com/api/externalAppHome?state={state}"
-            link = f"http://172.16.61.6:4745/api/externalAppHome?state={state}"
+            link = f"http://miniwechat.iflying.com/api/externalAppHome?state={state}"
+            # link = f"http://172.16.61.6:4745/api/externalAppHome?state={state}"
 
             # debugLog(link)
             # 创建 QRCodeGenerator 实例

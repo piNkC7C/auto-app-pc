@@ -98,7 +98,7 @@ class APP(wx.Frame):
         # }
         debugLog(f"验证客户是否监管（{external_id}）")
         debugLog(external_res)
-        if external_res['code'] == 200 and external_res['data'] == 0:
+        if external_res['code'] == 200 and external_res['data'] == 1:
             task_list = task_json['taskList']
             self.deal_task_list(task_list, task_json['id'])
         else:
@@ -119,7 +119,7 @@ class APP(wx.Frame):
         debugLog("开始")
         if open_qw == 0:
             asyncio.run(qwcosplay_task_start(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-        for task in task_list:
+        for index, task in enumerate(task_list):
             debugLog("任务")
             debugLog(task)
             if self.fei_status or open_qw == 1:
@@ -142,6 +142,13 @@ class APP(wx.Frame):
                         if task['actObjType'] == 'all':
                             if task['waitTime'] != 0:
                                 time.sleep(task['waitTime'])
+                            complete = False
+                            debugLog(f"跳过{index}之后的所有步骤")
+                            interrupt_str = f"跳过{index}之后的所有步骤"
+                            if open_qw == 0:
+                                asyncio.run(
+                                    qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                             interrupt_str))
                             break
                     else:
                         if task['skipTimes'] != 0:
@@ -154,10 +161,11 @@ class APP(wx.Frame):
                         else:
                             complete = False
                             debugLog(f"任务未完成{task_res}")
+                            interrupt_str = f"{task_res}"
                             if open_qw == 0:
                                 asyncio.run(
                                     qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                             task_res))
+                                                             interrupt_str))
                             break
                 else:
                     debugLog(f"skip_step：{skip_step}")
@@ -165,11 +173,11 @@ class APP(wx.Frame):
             else:
                 complete = False
                 debugLog(f"任务未完成：中途关闭托管")
-                if open_qw == 0:
-                    asyncio.run(
-                        qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                 "中途关闭托管"))
-                    asyncio.run(qwcosplay_change_host_status(info['userid'], 0))
+                # if open_qw == 0:
+                #     asyncio.run(
+                #         qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                #                                  "中途关闭托管"))
+                #     asyncio.run(qwcosplay_change_host_status(info['userid'], 0))
                 break
         if complete:
             debugLog("结束")
@@ -178,7 +186,7 @@ class APP(wx.Frame):
         return complete
 
     def deal_task(self, task):
-        debugLog(task)
+        # debugLog(task)
         # 图片
         if task['actObjType'] == 'image':
             if task['action'] == 'move_click':
@@ -227,8 +235,27 @@ class APP(wx.Frame):
         try:
             width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
             height = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
+            # # 获取窗口句柄
+            # hwnd = win32gui.FindWindow(None, '企业微信')
+            #
+            # # 检查窗口是否最小化
+            # is_minimized = win32gui.IsIconic(hwnd)
+            #
+            # # 检查窗口是否关闭
+            # def is_window_closed(hwnd):
+            #     if win32gui.IsWindow(hwnd):
+            #         return False  # 窗口存在，未关闭
+            #     else:
+            #         return True  # 窗口不存在，已关闭
+            #
+            # # 使用示例
+            # if is_minimized:
+            #     print('窗口已最小化')
+            # if is_window_closed(hwnd):
+            #     print('窗口已关闭')
             # 查找窗口并将其设置为全屏大小
             hwnd = win32gui.FindWindow(None, "企业微信")
+            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
             win32gui.SetForegroundWindow(hwnd)
             win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, int(width / 2), int(height / 1.5),
                                   win32con.SWP_SHOWWINDOW)

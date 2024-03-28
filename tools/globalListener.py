@@ -31,7 +31,7 @@ class GlobalListener:
         if self.gui_frame.is_human:
             self.mouse_stop = True
             if not self.key_stop:
-                pyautogui.press('1')
+                pyautogui.press('Ctrl')
                 # self.on_key_press(None)
             self.stop_listening()
             return False  # 返回 False 停止监听

@@ -5,8 +5,8 @@ from log.log_record import debugLog
 
 class MiniWechatRequest:
     def __init__(self):
-        # self.base_url = "http://miniwechat.iflying.com/api"
-        self.base_url = "http://172.16.61.6:4745/api"
+        self.base_url = "http://miniwechat.iflying.com/api"
+        # self.base_url = "http://172.16.61.6:4745/api"
         self.timeout = 10
 
     def request(self, method, url, **kwargs):

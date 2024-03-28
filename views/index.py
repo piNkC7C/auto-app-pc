@@ -15,6 +15,16 @@ class IndexPage(wx.Frame):
         super().__init__(None, title="", style=wx.NO_BORDER)
         self.socket = None
         self.file_manager = File()
+        self.file_manager.write_json_info_by_folder(['assets', 'app.json'], {
+            "app_name": "朱会潇·销售助理",
+            "app_ico": "res/zhuhuixiao.ico"
+        })
+        self.file_manager.write_json_info_by_folder(['assets', 'queue.json'], {
+            "hostname": "124.71.164.184",
+            "port": 5672,
+            "username": "iflying",
+            "password": "mq_iflying_2019"
+        })
         oldPicList = self.file_manager.get_json_info_by_folder(['assets', 'images.json'])
         picList = asyncio.run(miniwechat_get_feiassistpic(oldPicList))
         if picList['code'] == 0:
