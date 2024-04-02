@@ -16,8 +16,8 @@ class IndexPage(wx.Frame):
         self.socket = None
         self.file_manager = File()
         self.file_manager.write_json_info_by_folder(['assets', 'app.json'], {
-            "app_name": "朱会潇·销售助理",
-            "app_ico": "res/zhuhuixiao.ico"
+            "app_name": "朱慧潇·销售助理",
+            "app_ico": "res/0/zhuhuixiao.ico"
         })
         self.file_manager.write_json_info_by_folder(['assets', 'queue.json'], {
             "hostname": "124.71.164.184",
@@ -28,11 +28,12 @@ class IndexPage(wx.Frame):
         oldPicList = self.file_manager.get_json_info_by_folder(['assets', 'images.json'])
         picList = asyncio.run(miniwechat_get_feiassistpic(oldPicList))
         if picList['code'] == 0:
-            if picList['data'].__len__() > 0:
-                # debugLog(picList['data'])
-                newPicList = self.file_manager.write_json_info_by_folder(['assets', 'images.json'], picList['data'])
-                for pic in newPicList:
-                    self.file_manager.download_image(pic['PicUrl'], pic['PicName'], ['res', pic['PicName']])
+            self.file_manager.write_json_info_by_folder(['assets', 'images.json'],
+                                                        picList['data']['pics'])
+            if picList['data']['newPics'].__len__() > 0:
+                for pic in picList['data']['newPics']:
+                    self.file_manager.download_image(pic['PicUrl'], pic['PicName'],
+                                                     ['res', pic['PicRate'], pic['PicName']])
         self.info = self.file_manager.get_login_info()
         check_res = asyncio.run(miniwechat_check_login_status(self.info))
         debugLog("登陆验证结果")

@@ -2,6 +2,7 @@ from pynput.mouse import Listener as MouseListener
 from pynput.keyboard import Listener as KeyboardListener
 from log.log_record import debugLog
 import pyautogui
+import time
 
 
 class GlobalListener:
@@ -13,6 +14,8 @@ class GlobalListener:
         self.has_called_func = False  # 添加标志来标记是否已调用函数
         self.mouse_stop = False
         self.key_stop = False  # 添加标志来标记是否已调用函数
+        self.last_mouse_move_time = time.time()
+        # self.key_direction = 'down'
 
     def on_mouse_click(self, x, y, button, pressed):
         debugLog("鼠标点击事件")
@@ -26,6 +29,7 @@ class GlobalListener:
             return False  # 返回 False 停止监听
 
     def on_mouse_move(self, x, y):
+        self.last_mouse_move_time = time.time()
         debugLog("鼠标移动事件")
         debugLog(self.gui_frame.is_human)
         if self.gui_frame.is_human:
@@ -42,12 +46,37 @@ class GlobalListener:
         if self.gui_frame.is_human:
             self.key_stop = True
             # if not self.mouse_stop:
-                # pyautogui.moveTo(0, 0, duration=1.0)
-                # pyautogui.click()
-                # self.on_mouse_move(0, 0)
-                # self.on_mouse_click(0, 0, None, True)
+            # pyautogui.moveTo(0, 0, duration=1.0)
+            # pyautogui.click()
+            # self.on_mouse_move(0, 0)
+            # self.on_mouse_click(0, 0, None, True)
             self.stop_listening()
             return False  # 返回 False 停止监听
+
+    def move_mouse_if_idle(self):
+        # debugLog("上次移动鼠标时间")
+        # debugLog(self.last_mouse_move_time)
+        current_time = time.time()
+        if current_time - self.last_mouse_move_time > 60:
+            debugLog("超过60秒未移动鼠标")
+            # 获取屏幕的宽度和高度
+            screen_width, screen_height = pyautogui.size()
+            # 获取当前鼠标位置
+            current_x, current_y = pyautogui.position()
+            # 计算对称位置的坐标
+            symmetric_x = screen_width - current_x
+            symmetric_y = screen_height - current_y  # 假设以屏幕中心为对称轴
+            # 移动鼠标至对称位置
+            self.gui_frame.is_human = False
+            time.sleep(0.5)
+            # pyautogui.moveTo(symmetric_x, symmetric_y, duration=0.5)
+            # if self.key_direction == 'up':
+            #     self.key_direction = 'down'
+            # else:
+            #     self.key_direction = 'up'
+            pyautogui.press('Ctrl')
+            self.gui_frame.is_human = True
+            self.last_mouse_move_time = current_time
 
     def start_listening(self):
         self.is_listening = True
@@ -55,6 +84,9 @@ class GlobalListener:
         with MouseListener(on_click=self.on_mouse_click, on_move=self.on_mouse_move) as mouse_listener:
             # 开始监听全局键盘点击事件
             with KeyboardListener(on_press=self.on_key_press) as keyboard_listener:
+                while self.is_listening:
+                    self.move_mouse_if_idle()
+                    time.sleep(1)
                 # 持续监听鼠标和键盘事件，直到手动停止
                 mouse_listener.join()
                 keyboard_listener.join()

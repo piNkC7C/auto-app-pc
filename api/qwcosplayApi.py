@@ -104,12 +104,13 @@ async def qwcosplay_change_host_status(UserId, Status):
         }
 
 
-async def qwcosplay_user_watch_status(userId, saleId):
+async def qwcosplay_user_watch_status(taskId, userId):
     try:
         # 发送POST请求
         response = qwcosplay_request.get("/reply/saleManage/getUserWatchStatus", params={
             "userId": userId,
-            "saleId": saleId,
+            # "saleId": saleId,
+            'taskId': taskId,
         })
         return response
     except Exception as e:
@@ -135,6 +136,7 @@ async def qwcosplay_get_check_company_task():
             "code": 999,
             "message": str(e)
         }
+
 
 async def qwcosplay_check_host_status(UserId):
     # 返回值0通过，1不通过

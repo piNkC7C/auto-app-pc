@@ -209,9 +209,8 @@ class FeiAssistPage(wx.Frame):
     def OnCloseButtonClick(self, event):
         self.taskbar_show = False
         self.Show(False)
-        # self.app_instance.deal_task_json({
-        #     "id": "660240d620ff6b1d15e85036",
-        #     "taskList": [
+        # self.app_instance.deal_task_list(
+        #     [
         #         {
         #             "_id": "6600e6e317672e631d388efd",
         #             "type": 0,
@@ -316,7 +315,7 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 3,
-        #             "waitTime": 0,
+        #             "waitTime": 2,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
@@ -326,7 +325,7 @@ class FeiAssistPage(wx.Frame):
         #             "saleId": "",
         #             "instructionNo": 23,
         #             "instructionName": "点击激活X删除搜索内容",
-        #             "action": "verify",
+        #             "action": "move_click",
         #             "actObjType": "image",
         #             "image": {
         #                 "picName": "search_x_act",
@@ -335,7 +334,7 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 2,
-        #             "waitTime": 0,
+        #             "waitTime": 2,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
@@ -354,7 +353,7 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 1,
-        #             "waitTime": 0,
+        #             "waitTime": 2,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
@@ -373,7 +372,7 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 0,
+        #             "waitTime": 2,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
@@ -389,7 +388,7 @@ class FeiAssistPage(wx.Frame):
         #                 "content": "勒翁龙"
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 0,
+        #             "waitTime": 2,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
@@ -498,9 +497,7 @@ class FeiAssistPage(wx.Frame):
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         }
-        #     ],
-        #     "externalId": "wmu-p0CwAAMF9gDChOhuPIY-9qqSWTMw"
-        # }, self.info['userid'])
+        #     ], "1111111", 1)
         # pass
 
     def OnButtonEnter(self, event):
