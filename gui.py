@@ -151,6 +151,12 @@ class APP(wx.Frame):
                                     qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                              interrupt_str))
                             break
+                    elif task['action'] == 'stop':
+                        if task['actObjType'] == 'task':
+                            if task['waitTime'] != 0:
+                                time.sleep(task['waitTime'])
+                            debugLog(f"检测到任务结束标志")
+                            break
                     else:
                         if task['skipTimes'] != 0:
                             skip_step += task['skipTimes']
@@ -251,6 +257,7 @@ class APP(wx.Frame):
                     debugLog("企业微信关闭")
                     # 如果窗口不可见，则显示窗口
                     win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
                 # 设置窗口大小
                 win32gui.SetForegroundWindow(hwnd)
                 win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, int(width / 1.5), int(height / 1.5),

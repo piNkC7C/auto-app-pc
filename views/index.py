@@ -16,8 +16,9 @@ class IndexPage(wx.Frame):
         self.socket = None
         self.file_manager = File()
         self.file_manager.write_json_info_by_folder(['assets', 'app.json'], {
-            "app_name": "朱慧潇·销售助理",
-            "app_ico": "res/0/zhuhuixiao.ico"
+            "app_name": "朱会潇·销售助理",
+            "app_ico": "res/0/zhuhuixiao.ico",
+            # "app_png": "res/0/zhuhuixiao.png",
         })
         self.file_manager.write_json_info_by_folder(['assets', 'queue.json'], {
             "hostname": "124.71.164.184",

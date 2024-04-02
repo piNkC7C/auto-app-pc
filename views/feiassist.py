@@ -10,7 +10,7 @@ from tools.fileOperate import File
 from tools.messageQueue import MessageQueueManager
 from tools.globalListener import GlobalListener
 from gui import APP
-from .online import OnLinePage, OnAIPage, OffAIPage
+from .online import TipPage
 from log.log_record import debugLog
 from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status, qwcosplay_get_check_company_task, \
     qwcosplay_check_host_status
@@ -100,9 +100,9 @@ class FeiAssistPage(wx.Frame):
         self.file_manager = File()
         self.info = self.file_manager.get_login_info()
         self.app_instance = APP()
-        self.online_page = OnLinePage()
-        self.onAI_page = OnAIPage()
-        self.offAI_page = OffAIPage()
+        self.online_page = TipPage("在线", 57, 117, 198, 228, 240, 255)
+        self.onAI_page = TipPage("托管中", 7, 193, 96, 228, 255, 230)
+        self.offAI_page = TipPage("托管中断", 57, 117, 198, 251, 115, 115)
         self.status_page_show('online')
         self.message_queue_manager = MessageQueueManager()
 
@@ -645,7 +645,7 @@ class FeiAssistPage(wx.Frame):
                         else:
                             wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
                     else:
-                        wx.MessageBox(f"打开企业微信失败", "提示", wx.OK | wx.ICON_INFORMATION)
+                        wx.MessageBox(f"验证当前登录企业失败", "提示", wx.OK | wx.ICON_INFORMATION)
             else:
                 wx.MessageBox(f"托管开启失败：请检查是否已在其他地方打开托管", "提示", wx.OK | wx.ICON_INFORMATION)
         else:

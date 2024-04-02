@@ -89,7 +89,7 @@ class MessageQueueManager:
                 if connection:
                     circle = False
                     channel = connection.channel()
-                    # channel.queue_declare(queue=queue, durable=True)
+                    channel.queue_declare(queue=queue, durable=True)
                     channel.basic_qos(prefetch_count=1)
 
                     def callback(ch, method, properties, body):
