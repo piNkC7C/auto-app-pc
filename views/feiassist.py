@@ -211,143 +211,54 @@ class FeiAssistPage(wx.Frame):
         self.Show(False)
         # self.app_instance.deal_task_list(
         #     [
+        #         # {
+        #         #     "_id": "660d038ca45d0000e1003c42",
+        #         #     "type": 0,
+        #         #     "saleId": "",
+        #         #     "instructionNo": 31,
+        #         #     "instructionName": "验证工作台激活状态",
+        #         #     "action": "verify",
+        #         #     "actObjType": "image",
+        #         #     "image": {
+        #         #         "picName": "workstand_act",
+        #         #         "picConfidence": 0.8,
+        #         #         "picLeft": 0.5,
+        #         #         "picTop": 0.5
+        #         #     },
+        #         #     "skipTimes": 1,
+        #         #     "waitTime": 0,
+        #         #     "circleCount": 0,
+        #         #     "circleWaitTime": 0
+        #         # },
         #         {
-        #             "_id": "6600e6e317672e631d388efd",
+        #             "_id": "660d03a9a45d0000e1003c43",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 20,
-        #             "instructionName": "验证未激活X",
-        #             "action": "verify",
+        #             "instructionNo": 32,
+        #             "instructionName": "点击工作台图标",
+        #             "action": "move_click",
         #             "actObjType": "image",
         #             "image": {
-        #                 "picName": "search_x",
+        #                 "picName": "workstand",
         #                 "picConfidence": 0.8,
         #                 "picLeft": 0.5,
         #                 "picTop": 0.5
         #             },
-        #             "skipTimes": 4,
-        #             "waitTime": 2,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "6600e6e317672e631d388efe",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 21,
-        #             "instructionName": "验证激活X",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "search_x_act",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 4,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fbf7dfb494be2f74c49301",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 22,
-        #             "instructionName": "验证未激活搜索框",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "search",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 4,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fae4b0b494be2f74c492f7",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 1,
-        #             "instructionName": "验证激活搜索框",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "search_act",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 4,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "6600e6e317672e631d388f03",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 25,
-        #             "instructionName": "跳过后续所有步骤",
-        #             "action": "skip",
-        #             "actObjType": "all",
         #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fbf7b8b494be2f74c492ff",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 2,
-        #             "instructionName": "点击未激活X删除搜索内容",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "search_x",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 3,
         #             "waitTime": 2,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
         #         {
-        #             "_id": "6600e6e317672e631d388f01",
+        #             "_id": "660d03efa45d0000e1003c44",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 23,
-        #             "instructionName": "点击激活X删除搜索内容",
-        #             "action": "move_click",
+        #             "instructionNo": 33,
+        #             "instructionName": "验证工作台的小飞助理打开状态",
+        #             "action": "verify",
         #             "actObjType": "image",
         #             "image": {
-        #                 "picName": "search_x_act",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 2,
-        #             "waitTime": 2,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fbf7ceb494be2f74c49300",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 3,
-        #             "instructionName": "点击未激活搜索框",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "search",
+        #                 "picName": "enter_contact",
         #                 "picConfidence": 0.8,
         #                 "picLeft": 0.5,
         #                 "picTop": 0.5
@@ -358,15 +269,15 @@ class FeiAssistPage(wx.Frame):
         #             "circleWaitTime": 0
         #         },
         #         {
-        #             "_id": "6600e6e317672e631d388f02",
+        #             "_id": "660d0430a45d0000e1003c45",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 24,
-        #             "instructionName": "点击激活搜索框",
+        #             "instructionNo": 34,
+        #             "instructionName": "点击工作台小飞助理",
         #             "action": "move_click",
         #             "actObjType": "image",
         #             "image": {
-        #                 "picName": "search_act",
+        #                 "picName": "workstand_xiaofei",
         #                 "picConfidence": 0.8,
         #                 "picLeft": 0.5,
         #                 "picTop": 0.5
@@ -377,6 +288,25 @@ class FeiAssistPage(wx.Frame):
         #             "circleWaitTime": 0
         #         },
         #         {
+        #             "_id": "660d049fa45d0000e1003c46",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 35,
+        #             "instructionName": "点击客户id输入框",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "panda",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 1,
+        #             "circleCount": 2,
+        #             "circleWaitTime": 1
+        #         },
+        #         {
         #             "_id": "65fbf7f2b494be2f74c49305",
         #             "type": 0,
         #             "saleId": "",
@@ -385,7 +315,7 @@ class FeiAssistPage(wx.Frame):
         #             "action": "paste",
         #             "actObjType": "text",
         #             "text": {
-        #                 "content": "勒翁龙"
+        #                 "content": "wmu-p0CwAAbDRiV_1OiXXNi_dJklArAA"
         #             },
         #             "skipTimes": 0,
         #             "waitTime": 2,
@@ -393,15 +323,34 @@ class FeiAssistPage(wx.Frame):
         #             "circleWaitTime": 0
         #         },
         #         {
-        #             "_id": "65fbf7e4b494be2f74c49302",
+        #             "_id": "660d04e0a45d0000e1003c47",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 5,
-        #             "instructionName": "验证联系人状态",
+        #             "instructionNo": 36,
+        #             "instructionName": "点击进入会话",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "enter_contact",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fd57cfb494be2f74c4930b",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 13,
+        #             "instructionName": "验证工具栏状态",
         #             "action": "verify",
         #             "actObjType": "image",
         #             "image": {
-        #                 "picName": "contact",
+        #                 "picName": "zidingyi",
         #                 "picConfidence": 0.8,
         #                 "picLeft": 0.5,
         #                 "picTop": 0.5
@@ -412,69 +361,116 @@ class FeiAssistPage(wx.Frame):
         #             "circleWaitTime": 0
         #         },
         #         {
-        #             "_id": "6600e6e317672e631d388f03",
+        #             "_id": "65fbf802b494be2f74c49307",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 25,
-        #             "instructionName": "跳过后续所有步骤",
-        #             "action": "skip",
-        #             "actObjType": "all",
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fbf7e8b494be2f74c49303",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 6,
-        #             "instructionName": "点击客户",
-        #             "action": "move_click",
-        #             "actObjType": "position",
-        #             "position": {
-        #                 "x": 100,
-        #                 "y": 100
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
-        #
-        #         #     发送文字消息
-        #         {
-        #             "_id": "65fbf80ab494be2f74c49309",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 12,
-        #             "instructionName": "点击聊天框",
+        #             "instructionNo": 10,
+        #             "instructionName": "点击工具栏",
         #             "action": "move_click",
         #             "actObjType": "image",
         #             "image": {
-        #                 "picName": "chatroom",
+        #                 "picName": "help",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "66069afdbb5820268bfdc655",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 26,
+        #             "instructionName": "验证小飞助理激活状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "xiaofei_act",
+        #                 "picConfidence": 1,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fd580db494be2f74c4930c",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 14,
+        #             "instructionName": "点击小飞助理",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "xiaofei",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 1,
+        #             "circleWaitTime": 2
+        #         },
+        #         {
+        #             "_id": "66069b0abb5820268bfdc656",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 27,
+        #             "instructionName": "验证tab咨询激活状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "zixun_act",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fbf806b494be2f74c49308",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 11,
+        #             "instructionName": "点击tab_咨询",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "zixun",
         #                 "picConfidence": 0.8,
         #                 "picLeft": 0.5,
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
         #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleCount": 5,
+        #             "circleWaitTime": 1
         #         },
         #         {
-        #             "_id": "65fbf7f2b494be2f74c49305",
+        #             "_id": "65fd59c5b494be2f74c49310",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 8,
-        #             "instructionName": "粘贴文字",
-        #             "action": "paste",
-        #             "actObjType": "text",
-        #             "text": {
-        #                 "content": "测试测试测试"
+        #             "instructionNo": 18,
+        #             "instructionName": "点击行程",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "line",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 0,
+        #             "waitTime": 5,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
         #         },
@@ -496,7 +492,64 @@ class FeiAssistPage(wx.Frame):
         #             "waitTime": 0,
         #             "circleCount": 0,
         #             "circleWaitTime": 0
-        #         }
+        #         },
+        #         {
+        #             "_id": "660d03a9a45d0000e1003c43",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 32,
+        #             "instructionName": "点击工作台图标",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "workstand",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d03efa45d0000e1003c44",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 33,
+        #             "instructionName": "验证工作台的小飞助理打开状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "enter_contact",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d0430a45d0000e1003c45",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 34,
+        #             "instructionName": "点击工作台小飞助理",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "workstand_xiaofei",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
         #     ], "1111111", 1)
         # pass
 
