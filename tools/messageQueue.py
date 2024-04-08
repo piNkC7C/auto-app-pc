@@ -146,6 +146,7 @@ class MessageQueueManager:
                     if tag["queue"] == queue:
                         debugLog(f"{queue}关闭消费...")
                         tag["channel"].basic_cancel(tag["consumer_tag"])
+                        # tag["connection"].close()
                         # 关闭连接
                         self.consumer_tag.pop(index)
                         debugLog(f"删除队列tag：{tag['consumer_tag']}")

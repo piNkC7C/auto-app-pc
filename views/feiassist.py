@@ -62,10 +62,16 @@ class MyTaskBarIcon(TaskBarIcon):
         self.PopupMenu(self.menu)
 
     def OnOpenFei(self, event):
+        self.OnCheck(self.close_item, self.open_item)
         self.frame.get_fei_switch_state(True)
 
     def OnCloseFei(self, event):
+        self.OnCheck(self.open_item, self.close_item)
         self.frame.get_fei_switch_state(False)
+
+    def OnCheck(self, check, uncheck):
+        check.Check()
+        uncheck.Check(False)
 
     def OnDestroyFei(self, event):
         clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
@@ -80,6 +86,8 @@ class MyTaskBarIcon(TaskBarIcon):
         # pass
 
     def OnChangeFei(self, event):
+        self.open_item.Check(False)
+        self.close_item.Check()
         self.frame.get_fei_switch_state(False)
         self.frame.all_close()
         self.frame.Destroy()
@@ -690,6 +698,7 @@ class FeiAssistPage(wx.Frame):
                             self.app_instance.fei_status = switch
                             self.switch.refresh_switch(switch)
                             self.status_page_show('onAI')
+                            self.taskbar_icon.OnCheck(self.taskbar_icon.open_item, self.taskbar_icon.close_item)
                             self.start_threading(f"Fei_{self.info['userid']}", switch)
                             # self.message_queue_manager.insert_message_task({
                             #     "UserId": self.info["userid"],
@@ -707,6 +716,7 @@ class FeiAssistPage(wx.Frame):
                 self.app_instance.fei_status = switch
                 self.switch.refresh_switch(switch)
                 self.status_page_show('online')
+                self.taskbar_icon.OnCheck(self.taskbar_icon.close_item, self.taskbar_icon.open_item)
                 self.start_threading(f"Fei_{self.info['userid']}", switch)
                 # self.message_queue_manager.insert_message_task({
                 #     "UserId": self.info["userid"],

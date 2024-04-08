@@ -150,13 +150,16 @@ class APP(wx.Frame):
                                 asyncio.run(
                                     qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                              interrupt_str))
-                            break
-                    elif task['action'] == 'stop':
-                        if task['actObjType'] == 'task':
+                        elif task['actObjType'] == 'task':
+                            skip_step += task['skipTimes']
                             if task['waitTime'] != 0:
                                 time.sleep(task['waitTime'])
-                            debugLog(f"检测到任务结束标志")
-                            break
+                    # elif task['action'] == 'stop':
+                    #     if task['actObjType'] == 'task':
+                    #         if task['waitTime'] != 0:
+                    #             time.sleep(task['waitTime'])
+                    #         debugLog(f"检测到任务结束标志")
+                    #         break
                     else:
                         if task['skipTimes'] != 0:
                             skip_step += task['skipTimes']
