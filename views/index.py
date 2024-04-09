@@ -30,6 +30,8 @@ class IndexPage(wx.Frame):
         # loading.Show()
         self.socket = None
         self.file_manager = File()
+        self.busy = wx.BusyInfo("初始化数据...")
+        # self.busy = LoadingCom.show(self, self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
         self.init_data()
 
     def init_data(self):
@@ -53,8 +55,12 @@ class IndexPage(wx.Frame):
         debugLog(check_res)
         if check_res['code'] == 0:
             if check_res['data'] == '验证成功':
+                del self.busy
+                # self.busy.close()
                 self.show_fei_assist_page()
             else:
+                del self.busy
+                # self.busy.close()
                 self.show_login_page()
 
     def show_fei_assist_page(self):

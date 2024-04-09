@@ -101,6 +101,7 @@ class FeiAssistPage(wx.Frame):
         app_name = app_config["app_name"]
         app_ico = app_config["app_ico"]
         super().__init__(None, title=app_name, size=(550, 470), style=wx.NO_BORDER)
+        self.busy = wx.BusyInfo("加载中，请稍候...")
         self.callback = callback
         self.SetBackgroundColour(wx.Colour(245, 245, 245))  # 设置窗口背景颜色为白色
         self.font12 = wx.Font(wx.FontInfo(12).FaceName('Microsoft YaHei UI'))
@@ -200,6 +201,7 @@ class FeiAssistPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
+        del self.busy
 
     def OnLeftDown(self, event):
         self.CaptureMouse()
