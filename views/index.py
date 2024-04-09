@@ -28,8 +28,6 @@ class IndexPage(wx.Frame):
         # loading页面
         # loading = LoadingCom(self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
         # loading.Show()
-        fei_assist_callback = lambda: self.show_login_page()
-        self.fei_frame = FeiAssistPage(callback=fei_assist_callback)
         self.socket = None
         self.file_manager = File()
         self.init_data()
@@ -61,10 +59,12 @@ class IndexPage(wx.Frame):
 
     def show_fei_assist_page(self):
         self.Show(False)  # 隐藏主页窗口
-        self.fei_frame.Show()
+        fei_assist_callback = lambda: self.show_login_page()
+        fei_frame = FeiAssistPage(callback=fei_assist_callback)
+        fei_frame.Show()
         info = self.file_manager.get_login_info()
         # 实例化SocketHandler类
-        self.socket = socketHandle(f"{info['feiassistid']}", self.fei_frame.get_fei_switch_state)
+        self.socket = socketHandle(f"{info['feiassistid']}", fei_frame.get_fei_switch_state)
 
     def show_login_page(self):
         self.stop_socket_listener()
