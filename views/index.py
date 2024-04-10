@@ -8,7 +8,7 @@ from tools.fileOperate import File
 from tools.socketHandle import socketHandle
 from log.log_record import debugLog
 from api.miniwechatApi import miniwechat_get_feiassistpic, miniwechat_check_login_status
-from .components.loading import LoadingCom
+from .components.loading import LoadingCom, CustomBusyDialog
 
 
 class IndexPage(wx.Frame):
@@ -31,7 +31,9 @@ class IndexPage(wx.Frame):
         self.socket = None
         self.file_manager = File()
         self.busy = wx.BusyInfo("初始化数据...")
-        # self.busy = LoadingCom.show(self, self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
+        # self.busy = LoadingCom(self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
+        # self.busy = CustomBusyDialog(self)
+        # self.busy.Show()
         self.init_data()
 
     def init_data(self):
@@ -56,11 +58,12 @@ class IndexPage(wx.Frame):
         if check_res['code'] == 0:
             if check_res['data'] == '验证成功':
                 del self.busy
-                # self.busy.close()
+                # self.busy.on_close()
+                # busy.on_close()
                 self.show_fei_assist_page()
             else:
                 del self.busy
-                # self.busy.close()
+                # self.busy.on_close()
                 self.show_login_page()
 
     def show_fei_assist_page(self):

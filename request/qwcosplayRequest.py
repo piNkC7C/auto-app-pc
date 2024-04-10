@@ -17,6 +17,8 @@ class QWCosplayRequest:
     def request(self, method, url, **kwargs):
         full_url = self.base_url + url
         try:
+            debugLog(f"{full_url}请求参数：")
+            debugLog(f"{kwargs}")
             info = self.file_manager.get_login_info()
             # debugLog(info)
             response = requests.request(method, full_url, timeout=self.timeout,

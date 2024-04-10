@@ -14,10 +14,11 @@ class GlobalListener:
         self.has_called_func = False  # 添加标志来标记是否已调用函数
         self.mouse_stop = False
         self.key_stop = False  # 添加标志来标记是否已调用函数
-        self.last_mouse_move_time = time.time()
+        self.last_action_time = time.time()
         # self.key_direction = 'down'
 
     def on_mouse_click(self, x, y, button, pressed):
+        self.last_action_time = time.time()
         debugLog("鼠标点击事件")
         debugLog(self.gui_frame.is_human)
         if pressed & self.gui_frame.is_human:
@@ -29,7 +30,7 @@ class GlobalListener:
             return False  # 返回 False 停止监听
 
     def on_mouse_move(self, x, y):
-        self.last_mouse_move_time = time.time()
+        self.last_action_time = time.time()
         debugLog("鼠标移动事件")
         debugLog(self.gui_frame.is_human)
         if self.gui_frame.is_human:
@@ -41,6 +42,7 @@ class GlobalListener:
             return False  # 返回 False 停止监听
 
     def on_key_press(self, key):
+        self.last_action_time = time.time()
         debugLog("键盘事件")
         debugLog(self.gui_frame.is_human)
         if self.gui_frame.is_human:
@@ -54,11 +56,11 @@ class GlobalListener:
             return False  # 返回 False 停止监听
 
     def move_mouse_if_idle(self):
-        # debugLog("上次移动鼠标时间")
-        # debugLog(self.last_mouse_move_time)
+        debugLog("上次移动鼠标时间")
+        debugLog(self.last_action_time)
         current_time = time.time()
-        if current_time - self.last_mouse_move_time > 60:
-            debugLog("超过60秒未移动鼠标")
+        if current_time - self.last_action_time > 60:
+            debugLog("超过60秒没有动作")
             # 获取屏幕的宽度和高度
             screen_width, screen_height = pyautogui.size()
             # 获取当前鼠标位置
@@ -76,7 +78,7 @@ class GlobalListener:
             #     self.key_direction = 'up'
             pyautogui.press('Ctrl')
             self.gui_frame.is_human = True
-            self.last_mouse_move_time = current_time
+            self.last_action_time = current_time
 
     def start_listening(self):
         self.is_listening = True
