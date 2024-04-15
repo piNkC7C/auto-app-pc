@@ -8,12 +8,12 @@ import asyncio
 from tools.tools import CustomButton, CustomSwitch, MyThread
 from tools.fileOperate import File
 from tools.messageQueue import MessageQueueManager
-from tools.globalListener import GlobalListener
+from tools.globalListener import GlobalListener, KeyListener
 from gui import APP
 from .online import TipPage
 from log.log_record import debugLog
 from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status, qwcosplay_get_check_company_task, \
-    qwcosplay_check_host_status
+    qwcosplay_check_host_status, qwcosplay_quick_send_msg_task
 from .components.message import MessageBox
 
 
@@ -78,6 +78,7 @@ class MyTaskBarIcon(TaskBarIcon):
         debugLog(clear_res)
         if clear_res['code'] == 200:
             self.frame.get_fei_switch_state(False)
+            self.frame.key_listening.stop_listening()
             self.frame.all_close()
             self.frame.Destroy()
             self.Destroy()
@@ -114,6 +115,10 @@ class FeiAssistPage(wx.Frame):
         self.offAI_page = TipPage("托管中断", 57, 117, 198, 251, 115, 115)
         self.status_page_show('online')
         self.message_queue_manager = MessageQueueManager()
+        quick_task = asyncio.run(qwcosplay_quick_send_msg_task())
+        self.key_listening = KeyListener(quick_task['data']['keyList'], quick_task['data']['instructionList'])
+        self.key_listening_thread = threading.Thread(target=self.key_listening.start_listening)
+        self.key_listening_thread.start()
 
         # 居中窗口
         self.Center()
@@ -217,350 +222,350 @@ class FeiAssistPage(wx.Frame):
             self.ReleaseMouse()
 
     def OnCloseButtonClick(self, event):
-        # self.taskbar_show = False
-        # self.Show(False)
-        self.app_instance.deal_task_list(
-            [
-                # {
-                #     "_id": "660d038ca45d0000e1003c42",
-                #     "type": 0,
-                #     "saleId": "",
-                #     "instructionNo": 31,
-                #     "instructionName": "验证工作台激活状态",
-                #     "action": "verify",
-                #     "actObjType": "image",
-                #     "image": {
-                #         "picName": "workstand_act",
-                #         "picConfidence": 0.8,
-                #         "picLeft": 0.5,
-                #         "picTop": 0.5
-                #     },
-                #     "skipTimes": 1,
-                #     "waitTime": 0,
-                #     "circleCount": 0,
-                #     "circleWaitTime": 0
-                # },
-                {
-                    "_id": "660d03a9a45d0000e1003c43",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 32,
-                    "instructionName": "点击工作台图标",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "workstand",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d03efa45d0000e1003c44",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 33,
-                    "instructionName": "验证工作台的小飞助理打开状态",
-                    "action": "verify",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "enter_contact",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 1,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d0430a45d0000e1003c45",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 34,
-                    "instructionName": "点击工作台小飞助理",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "workstand_xiaofei",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d049fa45d0000e1003c46",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 35,
-                    "instructionName": "点击客户id输入框",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "panda",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 1,
-                    "circleCount": 2,
-                    "circleWaitTime": 1
-                },
-                {
-                    "_id": "65fbf7f2b494be2f74c49305",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 8,
-                    "instructionName": "粘贴文字",
-                    "action": "paste",
-                    "actObjType": "text",
-                    "text": {
-                        "content": "wmu-p0CwAAbDRiV_1OiXXNi_dJklArAA"
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d04e0a45d0000e1003c47",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 36,
-                    "instructionName": "点击进入会话",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "enter_contact",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "65fd57cfb494be2f74c4930b",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 13,
-                    "instructionName": "验证工具栏状态",
-                    "action": "verify",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "zidingyi",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 1,
-                    "waitTime": 0,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "65fbf802b494be2f74c49307",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 10,
-                    "instructionName": "点击工具栏",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "help",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "66069afdbb5820268bfdc655",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 26,
-                    "instructionName": "验证小飞助理激活状态",
-                    "action": "verify",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "xiaofei_act",
-                        "picConfidence": 1,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 1,
-                    "waitTime": 0,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "65fd580db494be2f74c4930c",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 14,
-                    "instructionName": "点击小飞助理",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "xiaofei",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 1,
-                    "circleWaitTime": 2
-                },
-                {
-                    "_id": "66069b0abb5820268bfdc656",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 27,
-                    "instructionName": "验证tab咨询激活状态",
-                    "action": "verify",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "zixun_act",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 1,
-                    "waitTime": 0,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "65fbf806b494be2f74c49308",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 11,
-                    "instructionName": "点击tab_咨询",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "zixun",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 0,
-                    "circleCount": 5,
-                    "circleWaitTime": 1
-                },
-                {
-                    "_id": "65fd59c5b494be2f74c49310",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 18,
-                    "instructionName": "点击行程",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "line",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 5,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "65fbf7f8b494be2f74c49306",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 9,
-                    "instructionName": "点击发送",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "sendmsg",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 0,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d03a9a45d0000e1003c43",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 32,
-                    "instructionName": "点击工作台图标",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "workstand",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d03efa45d0000e1003c44",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 33,
-                    "instructionName": "验证工作台的小飞助理打开状态",
-                    "action": "verify",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "enter_contact",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 1,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-                {
-                    "_id": "660d0430a45d0000e1003c45",
-                    "type": 0,
-                    "saleId": "",
-                    "instructionNo": 34,
-                    "instructionName": "点击工作台小飞助理",
-                    "action": "move_click",
-                    "actObjType": "image",
-                    "image": {
-                        "picName": "workstand_xiaofei",
-                        "picConfidence": 0.8,
-                        "picLeft": 0.5,
-                        "picTop": 0.5
-                    },
-                    "skipTimes": 0,
-                    "waitTime": 2,
-                    "circleCount": 0,
-                    "circleWaitTime": 0
-                },
-            ], "1111111", 1)
+        self.taskbar_show = False
+        self.Show(False)
+        # self.app_instance.deal_task_list(
+        #     [
+        #         # {
+        #         #     "_id": "660d038ca45d0000e1003c42",
+        #         #     "type": 0,
+        #         #     "saleId": "",
+        #         #     "instructionNo": 31,
+        #         #     "instructionName": "验证工作台激活状态",
+        #         #     "action": "verify",
+        #         #     "actObjType": "image",
+        #         #     "image": {
+        #         #         "picName": "workstand_act",
+        #         #         "picConfidence": 0.8,
+        #         #         "picLeft": 0.5,
+        #         #         "picTop": 0.5
+        #         #     },
+        #         #     "skipTimes": 1,
+        #         #     "waitTime": 0,
+        #         #     "circleCount": 0,
+        #         #     "circleWaitTime": 0
+        #         # },
+        #         {
+        #             "_id": "660d03a9a45d0000e1003c43",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 32,
+        #             "instructionName": "点击工作台图标",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "workstand",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d03efa45d0000e1003c44",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 33,
+        #             "instructionName": "验证工作台的小飞助理打开状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "enter_contact",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d0430a45d0000e1003c45",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 34,
+        #             "instructionName": "点击工作台小飞助理",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "workstand_xiaofei",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d049fa45d0000e1003c46",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 35,
+        #             "instructionName": "点击客户id输入框",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "panda",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 1,
+        #             "circleCount": 2,
+        #             "circleWaitTime": 1
+        #         },
+        #         {
+        #             "_id": "65fbf7f2b494be2f74c49305",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 8,
+        #             "instructionName": "粘贴文字",
+        #             "action": "paste",
+        #             "actObjType": "text",
+        #             "text": {
+        #                 "content": "wmu-p0CwAAbDRiV_1OiXXNi_dJklArAA"
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d04e0a45d0000e1003c47",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 36,
+        #             "instructionName": "点击进入会话",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "enter_contact",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fd57cfb494be2f74c4930b",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 13,
+        #             "instructionName": "验证工具栏状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "zidingyi",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fbf802b494be2f74c49307",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 10,
+        #             "instructionName": "点击工具栏",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "help",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "66069afdbb5820268bfdc655",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 26,
+        #             "instructionName": "验证小飞助理激活状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "xiaofei_act",
+        #                 "picConfidence": 1,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fd580db494be2f74c4930c",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 14,
+        #             "instructionName": "点击小飞助理",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "xiaofei",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 1,
+        #             "circleWaitTime": 2
+        #         },
+        #         {
+        #             "_id": "66069b0abb5820268bfdc656",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 27,
+        #             "instructionName": "验证tab咨询激活状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "zixun_act",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fbf806b494be2f74c49308",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 11,
+        #             "instructionName": "点击tab_咨询",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "zixun",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 0,
+        #             "circleCount": 5,
+        #             "circleWaitTime": 1
+        #         },
+        #         {
+        #             "_id": "65fd59c5b494be2f74c49310",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 18,
+        #             "instructionName": "点击行程",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "line",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 5,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "65fbf7f8b494be2f74c49306",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 9,
+        #             "instructionName": "点击发送",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "sendmsg",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d03a9a45d0000e1003c43",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 32,
+        #             "instructionName": "点击工作台图标",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "workstand",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d03efa45d0000e1003c44",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 33,
+        #             "instructionName": "验证工作台的小飞助理打开状态",
+        #             "action": "verify",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "enter_contact",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 1,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #         {
+        #             "_id": "660d0430a45d0000e1003c45",
+        #             "type": 0,
+        #             "saleId": "",
+        #             "instructionNo": 34,
+        #             "instructionName": "点击工作台小飞助理",
+        #             "action": "move_click",
+        #             "actObjType": "image",
+        #             "image": {
+        #                 "picName": "workstand_xiaofei",
+        #                 "picConfidence": 0.8,
+        #                 "picLeft": 0.5,
+        #                 "picTop": 0.5
+        #             },
+        #             "skipTimes": 0,
+        #             "waitTime": 2,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0
+        #         },
+        #     ], "1111111", 1)
         # pass
 
     def OnButtonEnter(self, event):

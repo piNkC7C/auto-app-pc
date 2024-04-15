@@ -11,6 +11,14 @@
 - 🚀 pyinstaller带控制台打包        # pyinstaller -F -i zhuhuixiao.ico --name "控制台版朱会潇" app.py
 - 🚀 pyinstaller打包               # pyinstaller -F -w -i zhuhuixiao.ico --name "朱会潇·销售助理" app.py
 
+## 打包注意事项 ‼️
+检查
+feiassis.py文件中的OnCloseButtonClick，get_fei_switch_state，start_threading函数
+globalListener.py的监听事件
+socket地址+所有接口的域名+队列地址
+
+
+
 ## 文件资源目录 📚
 
 ```text

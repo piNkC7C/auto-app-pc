@@ -1,6 +1,9 @@
 import wx
 import threading
 import asyncio
+import os
+import sys
+import subprocess
 
 from .login import LoginPage
 from .feiassist import FeiAssistPage
@@ -9,16 +12,23 @@ from tools.socketHandle import socketHandle
 from log.log_record import debugLog
 from api.miniwechatApi import miniwechat_get_feiassistpic, miniwechat_check_login_status
 from .components.loading import LoadingCom, CustomBusyDialog
+from tools.updateApp import check_for_updates, download_update
 
 
 class IndexPage(wx.Frame):
     def __init__(self):
         super().__init__(None, title="", style=wx.BORDER_NONE | wx.STAY_ON_TOP | wx.FRAME_NO_TASKBAR)
+        self.busy = wx.BusyInfo("检查下载更新...")
+        self.update_wait = None
+        self.app_version = 'v1.0'
+        debugLog(f"版本号：{self.app_version}")
         self.app_info = {
-            "app_name": "朱会潇·销售助理",
+            "app_name": f"朱会潇·销售助理{self.app_version}",
             "app_ico": "res/0/zhuhuixiao.ico",
-            # "app_png": "res/0/zhuhuixiao.png",
         }
+        self.file_manager = File()
+        # 初始化app配置
+        self.file_manager.write_json_info_by_folder(['assets', 'app.json'], self.app_info)
         self.queue_info = {
             "hostname": "124.71.164.184",
             "port": 5672,
@@ -28,17 +38,48 @@ class IndexPage(wx.Frame):
         # loading页面
         # loading = LoadingCom(self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
         # loading.Show()
+
         self.socket = None
-        self.file_manager = File()
-        self.busy = wx.BusyInfo("初始化数据...")
+        check_res = self.check_update()
+        if check_res == 0:
+            del self.update_wait
+            debugLog("启动更新脚本")
+            # 启动新的独立进程
+            subprocess.Popen(["update.exe"])
+        elif check_res == 1:
+            del self.update_wait
+            dlg_result = wx.MessageBox("安装包下载失败", "提示", wx.OK | wx.ICON_INFORMATION)
+            # 检查用户的响应
+            if dlg_result == wx.OK:
+                # 用户点击了确定按钮
+                sys.exit()
+        else:
+            del self.busy
+            self.download_wait = wx.BusyInfo("下载资源...")
+            self.init_data()
+
         # self.busy = LoadingCom(self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
         # self.busy = CustomBusyDialog(self)
         # self.busy.Show()
-        self.init_data()
+
+    def check_update(self):
+        update_res = check_for_updates(self.app_version)
+        debugLog(update_res)
+        if update_res:
+            del self.busy
+            self.update_wait = wx.BusyInfo("下载安装包...")
+            # 备用目录
+            temp_dir = "temp_updates"
+            download_res = download_update(self.app_info['app_name'], temp_dir)
+            if download_res:
+                debugLog(f"{update_res['message']}下载完成")
+                return 0
+            return 1
+        else:
+            return 2
 
     def init_data(self):
-        # 初始化app配置
-        self.file_manager.write_json_info_by_folder(['assets', 'app.json'], self.app_info)
+        # 队列配置
         self.file_manager.write_json_info_by_folder(['assets', 'queue.json'], self.queue_info)
         # 下载图片
         oldPicList = self.file_manager.get_json_info_by_folder(['assets', 'images.json'])
@@ -57,12 +98,12 @@ class IndexPage(wx.Frame):
         debugLog(check_res)
         if check_res['code'] == 0:
             if check_res['data'] == '验证成功':
-                del self.busy
+                del self.download_wait
                 # self.busy.on_close()
                 # busy.on_close()
                 self.show_fei_assist_page()
             else:
-                del self.busy
+                del self.download_wait
                 # self.busy.on_close()
                 self.show_login_page()
 

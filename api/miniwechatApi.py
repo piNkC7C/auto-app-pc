@@ -20,9 +20,9 @@ async def miniwechat_get_feiassistid():
         debugLog(str(e))
         wx.MessageBox(f"mimniwechat/getFeiAssistId：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
-                "code": 999,
-                "message": str(e)
-            }
+            "code": 999,
+            "message": str(e)
+        }
 
 
 # 获取图片集
@@ -35,9 +35,10 @@ async def miniwechat_get_feiassistpic(oldPicList):
         debugLog(str(e))
         wx.MessageBox(f"mimniwechat/getFeiPics：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
-                "code": 999,
-                "message": str(e)
-            }
+            "code": 999,
+            "message": str(e)
+        }
+
 
 async def miniwechat_check_login_status(json):
     try:
@@ -48,6 +49,23 @@ async def miniwechat_check_login_status(json):
         debugLog(str(e))
         wx.MessageBox(f"mimniwechat/checkLoginStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
-                "code": 999,
-                "message": str(e)
-            }
+            "code": 999,
+            "message": str(e)
+        }
+
+
+async def miniwechat_get_feiassistversion(version):
+    try:
+        # 发送POST请求
+        response = miniwechat_request.get("/getFeiAssistVersion", params={
+            "version": version,
+        })
+        return response
+    except Exception as e:
+        debugLog("An error occurred during request:")
+        debugLog(str(e))
+        wx.MessageBox(f"mimniwechat/getFeiAssistVersion：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        return {
+            "code": 999,
+            "message": str(e)
+        }

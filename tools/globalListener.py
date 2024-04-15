@@ -3,6 +3,7 @@ from pynput.keyboard import Listener as KeyboardListener
 from log.log_record import debugLog
 import pyautogui
 import time
+from gui import APP
 
 
 class GlobalListener:
@@ -56,18 +57,18 @@ class GlobalListener:
             return False  # 返回 False 停止监听
 
     def move_mouse_if_idle(self):
-        debugLog("上次移动鼠标时间")
-        debugLog(self.last_action_time)
+        # debugLog("上次移动鼠标时间")
+        # debugLog(self.last_action_time)
         current_time = time.time()
         if current_time - self.last_action_time > 60:
             debugLog("超过60秒没有动作")
-            # 获取屏幕的宽度和高度
-            screen_width, screen_height = pyautogui.size()
-            # 获取当前鼠标位置
-            current_x, current_y = pyautogui.position()
-            # 计算对称位置的坐标
-            symmetric_x = screen_width - current_x
-            symmetric_y = screen_height - current_y  # 假设以屏幕中心为对称轴
+            # # 获取屏幕的宽度和高度
+            # screen_width, screen_height = pyautogui.size()
+            # # 获取当前鼠标位置
+            # current_x, current_y = pyautogui.position()
+            # # 计算对称位置的坐标
+            # symmetric_x = screen_width - current_x
+            # symmetric_y = screen_height - current_y  # 假设以屏幕中心为对称轴
             # 移动鼠标至对称位置
             self.gui_frame.is_human = False
             time.sleep(0.5)
@@ -101,3 +102,45 @@ class GlobalListener:
 
     def stop_only_listening(self):
         self.is_listening = False
+
+
+class KeyListener:
+    def __init__(self, key_list, instruction_list):
+        self.is_listening = False
+        debugLog(key_list)
+        self.key_list = key_list
+        # self.key_num = key_list.__len__()
+        self.instruction_list = instruction_list
+        # self.pre_key = None
+        self.app_instance = APP()
+
+    def on_key_press(self, key):
+        # debugLog("前一个键")
+        # debugLog(self.pre_key)
+        # debugLog("当前键")
+        # debugLog(str(key))
+        if str(key) in self.key_list:
+            # if self.pre_key is None:
+            #     self.pre_key = str(key)
+            # if self.key_num == 1:
+            debugLog(f"用户按了{str(key)}键")
+            self.app_instance.deal_task_list(self.instruction_list, 1, 2)
+            # else:
+            #     if self.pre_key in self.key_list:
+            #         debugLog(f"用户按了{self.pre_key}加{str(key)}组合键")
+        # else:
+        #     self.pre_key = None
+        if self.is_listening is False:
+            return False  # 返回 False 停止监听
+
+    def start_listening(self):
+        self.is_listening = True
+        # 开始监听全局键盘点击事件
+        with KeyboardListener(on_press=self.on_key_press) as keyboard_listener:
+            # 持续监听鼠标和键盘事件，直到手动停止
+            keyboard_listener.join()
+
+    def stop_listening(self):
+        self.is_listening = False
+        time.sleep(0.5)
+        pyautogui.press('Ctrl')

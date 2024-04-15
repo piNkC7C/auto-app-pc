@@ -142,6 +142,14 @@ class File(object):
                 json_info = json.load(f)
                 return json_info
 
+    def check_json_by_folder(self, path_list):
+        # 构建文件夹路径
+        folder_path = os.path.join(*path_list)
+        # 如果文件夹路径不存在
+        if not os.path.exists(folder_path):
+            return False
+        return True
+
     def write_json_info_by_folder(self, path_list, data_to_write):
         # 构建文件夹路径
         folder_path = os.path.join(*path_list[:-1])

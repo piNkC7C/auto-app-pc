@@ -154,3 +154,19 @@ async def qwcosplay_check_host_status(UserId):
             "code": 999,
             "message": str(e)
         }
+
+
+async def qwcosplay_quick_send_msg_task():
+    # 返回值0通过，1不通过
+    try:
+        # 发送POST请求
+        response = qwcosplay_request.get("/reply/saleManage/getQuickSendMsgTask")
+        return response
+    except Exception as e:
+        debugLog("An error occurred during request:")
+        debugLog(str(e))
+        # wx.MessageBox(f"/reply/saleManage/changeHostingStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        return {
+            "code": 999,
+            "message": str(e)
+        }

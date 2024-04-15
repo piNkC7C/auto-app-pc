@@ -123,7 +123,7 @@ class APP(wx.Frame):
         for index, task in enumerate(task_list):
             debugLog("任务")
             debugLog(task)
-            if self.fei_status or open_qw == 1:
+            if self.fei_status or open_qw != 0:
                 if skip_step == 0:
                     task_res = self.deal_task(task)
                     if task['action'] == 'verify':

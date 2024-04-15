@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "朱会潇·销售助理"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0"
 #define MyAppPublisher "zsj"
 #define MyAppExeName "朱会潇·销售助理.exe"
 #define MyAppAssocName MyAppName + ""
@@ -12,7 +12,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{ABBB384F-EBC1-4221-BBBC-7BEAD2236DB8}
+AppId={{A404346F-200A-4BB3-B7EE-D1878F437BA1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -37,6 +37,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "F:\Python\WeChatBot\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "F:\Python\cosplay_update\dist\update.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
