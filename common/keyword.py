@@ -6,6 +6,7 @@ import time
 
 from log.log_record import debugLog
 
+
 def inputContent(str):
     debugLog(f"粘贴文字事件:{str}")
     pyperclip.copy(str)

@@ -109,6 +109,13 @@ class APP(wx.Frame):
                                          "客户监管状态有问题"))
 
     def deal_task_list(self, task_list, task_id, open_qw=0):
+        """
+        处理任务数组
+        :param task_list:
+        :param task_id:
+        :param open_qw: 任务来源：0队列任务，1获取切换企业任务接口，2获取快捷键任务接口
+        :return: 任务完成情况
+        """
         # info = self.file_manager.get_login_info()
         if open_qw == 1:
             open_res = self.openQW()
@@ -125,7 +132,7 @@ class APP(wx.Frame):
             debugLog(task)
             if self.fei_status or open_qw != 0:
                 if skip_step == 0:
-                    task_res = self.deal_task(task)
+                    task_res = self.deal_task(task, open_qw)
                     if task['action'] == 'verify':
                         type_target = type(task_res)
                         if type_target == dict:
@@ -136,13 +143,13 @@ class APP(wx.Frame):
                             debugLog("验证通过")
                             skip_step += task['skipTimes']
                         if task['waitTime'] != 0:
-                            time.sleep(task['waitTime'])
+                            time.sleep(task['waitTime'] / 1000)
                         # debugLog("结束")
                         # asyncio.run(qwcosplay_task_finish(task['_id'], datetime.now()))
                     elif task['action'] == 'skip':
                         if task['actObjType'] == 'all':
                             if task['waitTime'] != 0:
-                                time.sleep(task['waitTime'])
+                                time.sleep(task['waitTime'] / 1000)
                             complete = False
                             debugLog(f"跳过{index}之后的所有步骤")
                             interrupt_str = f"跳过{index}之后的所有步骤"
@@ -153,11 +160,11 @@ class APP(wx.Frame):
                         elif task['actObjType'] == 'task':
                             skip_step += task['skipTimes']
                             if task['waitTime'] != 0:
-                                time.sleep(task['waitTime'])
+                                time.sleep(task['waitTime'] / 1000)
                     # elif task['action'] == 'stop':
                     #     if task['actObjType'] == 'task':
                     #         if task['waitTime'] != 0:
-                    #             time.sleep(task['waitTime'])
+                    #             time.sleep(task['waitTime'] / 1000)
                     #         debugLog(f"检测到任务结束标志")
                     #         break
                     else:
@@ -165,7 +172,7 @@ class APP(wx.Frame):
                             skip_step += task['skipTimes']
                         if task_res is True:
                             if task['waitTime'] != 0:
-                                time.sleep(task['waitTime'])
+                                time.sleep(task['waitTime'] / 1000)
                             # debugLog("结束")
                             # asyncio.run(qwcosplay_task_finish(task['_id'], datetime.now()))
                         else:
@@ -195,7 +202,7 @@ class APP(wx.Frame):
                 asyncio.run(qwcosplay_task_finish(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         return complete
 
-    def deal_task(self, task):
+    def deal_task(self, task, open_qw):
         # debugLog(task)
         # 图片
         if task['actObjType'] == 'image':
@@ -205,7 +212,7 @@ class APP(wx.Frame):
                 target_pic = self.wait_pic(f"res/{scale_rate}/{task['image']['picName']}.png",
                                            task['image']['picConfidence'], 1,
                                            task['circleCount'],
-                                           task['circleWaitTime'])
+                                           task['circleWaitTime'] / 1000)
                 type_target = type(target_pic)
                 if type_target == dict:
                     return target_pic
@@ -213,13 +220,13 @@ class APP(wx.Frame):
                     click_res = self.circle_move_click_pic(
                         target_pic, task['image']['picLeft'],
                         task['image']['picTop'], 1,
-                        task['circleCount'], task['circleWaitTime'])
+                        task['circleCount'], task['circleWaitTime'] / 1000, task['moveClickWaitTime'] / 1000, open_qw)
                     return click_res
             elif task['action'] == 'verify':
                 scale_rate = screen_scale_rate()
                 target_pic = self.wait_pic(f"res/{scale_rate}/{task['image']['picName']}.png",
                                            task['image']['picConfidence'], 1,
-                                           task['circleCount'], task['circleWaitTime'])
+                                           task['circleCount'], task['circleWaitTime'] / 1000)
                 return target_pic
         elif task['actObjType'] == 'text':
             if task['action'] == 'paste':
@@ -232,7 +239,8 @@ class APP(wx.Frame):
         elif task['actObjType'] == 'position':
             if task['action'] == 'move_click':
                 click_res = self.circle_move_click_position(task['position']['x'], task['position']['y'], 1,
-                                                            task['circleCount'], task['circleWaitTime'])
+                                                            task['circleCount'], task['circleWaitTime'] / 1000,
+                                                            task['moveClickWaitTime'] / 1000)
                 return click_res
             else:
                 return "未识别的类型"
@@ -265,7 +273,7 @@ class APP(wx.Frame):
                 win32gui.SetForegroundWindow(hwnd)
                 win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, int(width / 1.5), int(height / 1.5),
                                       win32con.SWP_SHOWWINDOW)
-            time.sleep(2)
+            time.sleep(1)
             return True
         except Exception as e:
             debugLog("打开企业微信报错：" + str(e))
@@ -289,12 +297,18 @@ class APP(wx.Frame):
             # if is_window_closed(hwnd):
             #     print('窗口已关闭')
 
-    def circle_move_click_pic(self, target_pic, x_percent, y_percent, click_num, max_num, wait_time):
+    def circle_move_click_pic(self, target_pic, x_percent, y_percent, click_num, max_num, wait_time,
+                              move_click_wait_time, open_qw):
         try:
             # scale_rate = screen_scale_rate()
-            movePosition(target_pic.left + target_pic.width * x_percent,
-                         target_pic.top + target_pic.height * y_percent)
-            time.sleep(2)
+            if open_qw == 2:
+                pyautogui.moveTo(target_pic.left + target_pic.width * x_percent,
+                                 target_pic.top + target_pic.height * y_percent)
+                time.sleep(move_click_wait_time)
+            else:
+                movePosition(target_pic.left + target_pic.width * x_percent,
+                             target_pic.top + target_pic.height * y_percent)
+                time.sleep(move_click_wait_time)
             self.is_human = False
             pyautogui.click(target_pic.left + target_pic.width * x_percent,
                             target_pic.top + target_pic.height * y_percent)
@@ -307,14 +321,15 @@ class APP(wx.Frame):
         if click_num > max_num:
             return click_res
         else:
-            click_res = self.circle_move_click_pic(target_pic, x_percent, y_percent, click_num, max_num, wait_time)
+            click_res = self.circle_move_click_pic(target_pic, x_percent, y_percent, click_num, max_num, wait_time,
+                                                   move_click_wait_time, open_qw)
             return click_res
 
-    def circle_move_click_position(self, x, y, click_num, max_num, wait_time):
+    def circle_move_click_position(self, x, y, click_num, max_num, wait_time, move_click_wait_time):
         try:
             scale_rate = screen_scale_rate()
             movePosition(x * scale_rate / 100, y * scale_rate / 100)
-            time.sleep(2)
+            time.sleep(move_click_wait_time)
             self.is_human = False
             pyautogui.click(x * scale_rate / 100, y * scale_rate / 100)
             self.is_human = True
@@ -326,14 +341,14 @@ class APP(wx.Frame):
         if click_num > max_num:
             return click_res
         else:
-            click_res = self.circle_move_click_position(x, y, click_num, max_num, wait_time)
+            click_res = self.circle_move_click_position(x, y, click_num, max_num, wait_time, move_click_wait_time)
             return click_res
 
     def wait_pic(self, pic_url, pic_confidence, wait_num, max_num, wait_time):
         try:
             target_pic = pyautogui.locateOnScreen(pic_url, confidence=pic_confidence)
         except pyautogui.ImageNotFoundException:
-            debugLog(f"未找到目标图片{pic_url}")
+            debugLog(f"第{wait_num}次验证失败，未找到目标图片{pic_url}")
             target_pic = {
                 "left": False,
                 "info": f"未找到目标图片{pic_url}",

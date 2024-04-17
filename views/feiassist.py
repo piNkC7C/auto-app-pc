@@ -78,7 +78,8 @@ class MyTaskBarIcon(TaskBarIcon):
         debugLog(clear_res)
         if clear_res['code'] == 200:
             self.frame.get_fei_switch_state(False)
-            self.frame.key_listening.stop_listening()
+            if self.frame.quick_task['code'] == 200:
+                self.frame.key_listening.stop_listening()
             self.frame.all_close()
             self.frame.Destroy()
             self.Destroy()
@@ -115,10 +116,12 @@ class FeiAssistPage(wx.Frame):
         self.offAI_page = TipPage("托管中断", 57, 117, 198, 251, 115, 115)
         self.status_page_show('online')
         self.message_queue_manager = MessageQueueManager()
-        quick_task = asyncio.run(qwcosplay_quick_send_msg_task())
-        self.key_listening = KeyListener(quick_task['data']['keyList'], quick_task['data']['instructionList'])
-        self.key_listening_thread = threading.Thread(target=self.key_listening.start_listening)
-        self.key_listening_thread.start()
+        self.quick_task = asyncio.run(qwcosplay_quick_send_msg_task())
+        if self.quick_task['code'] == 200:
+            debugLog("打开快捷键监听")
+            self.key_listening = KeyListener(self.quick_task['data']['keyList'], self.quick_task['data']['instructionList'])
+            self.key_listening_thread = threading.Thread(target=self.key_listening.start_listening)
+            self.key_listening_thread.start()
 
         # 居中窗口
         self.Center()
@@ -243,7 +246,8 @@ class FeiAssistPage(wx.Frame):
         #         #     "skipTimes": 1,
         #         #     "waitTime": 0,
         #         #     "circleCount": 0,
-        #         #     "circleWaitTime": 0
+        #         #     "circleWaitTime": 0,
+        #         #     "moveClickWaitTime": 0
         #         # },
         #         {
         #             "_id": "660d03a9a45d0000e1003c43",
@@ -260,9 +264,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 0,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "660d03efa45d0000e1003c44",
@@ -279,9 +284,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 1,
-        #             "waitTime": 2,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "waitTime": 0,
+        #             "circleCount": 20,
+        #             "circleWaitTime": 100,
+        #             "moveClickWaitTime": 0
         #         },
         #         {
         #             "_id": "660d0430a45d0000e1003c45",
@@ -298,9 +304,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 2000,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "660d049fa45d0000e1003c46",
@@ -317,9 +324,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 1,
-        #             "circleCount": 2,
-        #             "circleWaitTime": 1
+        #             "waitTime": 100,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "65fbf7f2b494be2f74c49305",
@@ -330,12 +338,13 @@ class FeiAssistPage(wx.Frame):
         #             "action": "paste",
         #             "actObjType": "text",
         #             "text": {
-        #                 "content": "wmu-p0CwAAbDRiV_1OiXXNi_dJklArAA"
+        #                 "content": "wmu-p0CwAAMF9gDChOhuPIY-9qqSWTMw"
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 200,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 0
         #         },
         #         {
         #             "_id": "660d04e0a45d0000e1003c47",
@@ -352,9 +361,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 0,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "65fd57cfb494be2f74c4930b",
@@ -372,8 +382,9 @@ class FeiAssistPage(wx.Frame):
         #             },
         #             "skipTimes": 1,
         #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleCount": 20,
+        #             "circleWaitTime": 100,
+        #             "moveClickWaitTime": 0
         #         },
         #         {
         #             "_id": "65fbf802b494be2f74c49307",
@@ -390,29 +401,31 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 1000,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
-        #         {
-        #             "_id": "66069afdbb5820268bfdc655",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 26,
-        #             "instructionName": "验证小飞助理激活状态",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "xiaofei_act",
-        #                 "picConfidence": 1,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 1,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
-        #         },
+        #         # {
+        #         #     "_id": "66069afdbb5820268bfdc655",
+        #         #     "type": 0,
+        #         #     "saleId": "",
+        #         #     "instructionNo": 26,
+        #         #     "instructionName": "验证小飞助理激活状态",
+        #         #     "action": "verify",
+        #         #     "actObjType": "image",
+        #         #     "image": {
+        #         #         "picName": "xiaofei_act",
+        #         #         "picConfidence": 1,
+        #         #         "picLeft": 0.5,
+        #         #         "picTop": 0.5
+        #         #     },
+        #         #     "skipTimes": 1,
+        #         #     "waitTime": 0,
+        #         #     "circleCount": 20,
+        #         #     "circleWaitTime": 100,
+        #         #     "moveClickWaitTime": 0
+        #         # },
         #         {
         #             "_id": "65fd580db494be2f74c4930c",
         #             "type": 0,
@@ -428,9 +441,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
-        #             "circleCount": 1,
-        #             "circleWaitTime": 2
+        #             "waitTime": 0,
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "66069b0abb5820268bfdc656",
@@ -448,8 +462,9 @@ class FeiAssistPage(wx.Frame):
         #             },
         #             "skipTimes": 1,
         #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleCount": 20,
+        #             "circleWaitTime": 100,
+        #             "moveClickWaitTime": 0
         #         },
         #         {
         #             "_id": "65fbf806b494be2f74c49308",
@@ -467,27 +482,29 @@ class FeiAssistPage(wx.Frame):
         #             },
         #             "skipTimes": 0,
         #             "waitTime": 0,
-        #             "circleCount": 5,
-        #             "circleWaitTime": 1
+        #             "circleCount": 0,
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "65fd59c5b494be2f74c49310",
         #             "type": 0,
         #             "saleId": "",
-        #             "instructionNo": 18,
-        #             "instructionName": "点击行程",
+        #             "instructionNo": 7,
+        #             "instructionName": "点击公司信息",
         #             "action": "move_click",
         #             "actObjType": "image",
         #             "image": {
-        #                 "picName": "line",
+        #                 "picName": "company",
         #                 "picConfidence": 0.8,
         #                 "picLeft": 0.5,
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 5,
+        #             "waitTime": 5000,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "65fbf7f8b494be2f74c49306",
@@ -506,7 +523,8 @@ class FeiAssistPage(wx.Frame):
         #             "skipTimes": 0,
         #             "waitTime": 0,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "660d03a9a45d0000e1003c43",
@@ -523,9 +541,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 0,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #         {
         #             "_id": "660d03efa45d0000e1003c44",
@@ -542,9 +561,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 1,
-        #             "waitTime": 2,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "waitTime": 0,
+        #             "circleCount": 20,
+        #             "circleWaitTime": 100,
+        #             "moveClickWaitTime": 0
         #         },
         #         {
         #             "_id": "660d0430a45d0000e1003c45",
@@ -561,9 +581,10 @@ class FeiAssistPage(wx.Frame):
         #                 "picTop": 0.5
         #             },
         #             "skipTimes": 0,
-        #             "waitTime": 2,
+        #             "waitTime": 0,
         #             "circleCount": 0,
-        #             "circleWaitTime": 0
+        #             "circleWaitTime": 0,
+        #             "moveClickWaitTime": 100
         #         },
         #     ], "1111111", 1)
         # pass

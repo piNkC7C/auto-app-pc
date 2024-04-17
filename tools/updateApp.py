@@ -8,7 +8,7 @@ import asyncio
 from log.log_record import debugLog
 
 # 更新服务器 URL
-UPDATE_SERVER_URL = "https://shining-under-camera.obs.cn-east-3.myhuaweicloud.com/download/"
+UPDATE_SERVER_URL = "https://shining-under-camera.obs.cn-east-3.myhuaweicloud.com/download/company/"
 
 
 def check_for_updates(version):
@@ -19,15 +19,17 @@ def check_for_updates(version):
     return False
 
 
-def download_update(app_name, update_name):
+def download_update(app_name):
     try:
         # # 创建备用目录
         # if not os.path.exists(temp_dir):
         #     os.makedirs(temp_dir)
         # 字符串转码
         encoded_app_name = urllib.parse.quote(app_name)
+        url = UPDATE_SERVER_URL + f"{encoded_app_name}.exe"
+        debugLog(url)
         # 下载最新版本
-        with urllib.request.urlopen(UPDATE_SERVER_URL + f"{encoded_app_name}.exe") as newApp, open(
+        with urllib.request.urlopen(url) as newApp, open(
                 f"{app_name}_new.exe",
                 "wb") as out_file:
             newAppData = newApp.read()

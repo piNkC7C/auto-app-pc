@@ -20,10 +20,11 @@ class IndexPage(wx.Frame):
         super().__init__(None, title="", style=wx.BORDER_NONE | wx.STAY_ON_TOP | wx.FRAME_NO_TASKBAR)
         self.busy = wx.BusyInfo("检查下载更新...")
         self.update_wait = None
-        self.app_version = 'v1.0'
+        self.app_version = 'v1.1'
         debugLog(f"版本号：{self.app_version}")
+        self.app_name = '朱会潇·销售助理'
         self.app_info = {
-            "app_name": f"朱会潇·销售助理{self.app_version}",
+            "app_name": f"{self.app_name}{self.app_version}",
             "app_ico": "res/0/zhuhuixiao.ico",
         }
         self.file_manager = File()
@@ -40,6 +41,7 @@ class IndexPage(wx.Frame):
         # loading.Show()
 
         self.socket = None
+        # 检查更新
         check_res = self.check_update()
         if check_res == 0:
             del self.update_wait
@@ -65,14 +67,14 @@ class IndexPage(wx.Frame):
     def check_update(self):
         update_res = check_for_updates(self.app_version)
         debugLog(update_res)
+        debugLog(f"{self.app_name}{self.app_version}")
         if update_res:
             del self.busy
             self.update_wait = wx.BusyInfo("下载安装包...")
             # 备用目录
-            temp_dir = "temp_updates"
-            download_res = download_update(self.app_info['app_name'], temp_dir)
+            download_res = download_update(self.app_name)
             if download_res:
-                debugLog(f"{update_res['message']}下载完成")
+                debugLog(f"{self.app_name}{update_res['message']}下载完成")
                 return 0
             return 1
         else:
