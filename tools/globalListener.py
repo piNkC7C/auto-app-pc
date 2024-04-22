@@ -108,28 +108,26 @@ class KeyListener:
     def __init__(self, key_list, instruction_list):
         self.is_listening = False
         debugLog(key_list)
-        self.key_list = key_list
+        self.key_list = [key_list[0], "Key.ctrl_l+Key.enter", "Key.ctrl_r+Key.enter"]
         # self.key_num = key_list.__len__()
         self.instruction_list = instruction_list
-        # self.pre_key = None
+        self.pre_key = None
         self.app_instance = APP()
 
     def on_key_press(self, key):
-        # debugLog("前一个键")
-        # debugLog(self.pre_key)
-        # debugLog("当前键")
-        # debugLog(str(key))
-        if str(key) in self.key_list:
-            # if self.pre_key is None:
-            #     self.pre_key = str(key)
-            # if self.key_num == 1:
+        debugLog("前一个键")
+        debugLog(self.pre_key)
+        debugLog("当前键")
+        debugLog(str(key))
+        if f"{self.pre_key}+{str(key)}" in self.key_list:
+            debugLog(f"用户按了组合非热键：{self.pre_key}+{str(key)}")
+            self.app_instance.deal_task_list(self.instruction_list[f"{self.pre_key}+{str(key)}"], 1, 2)
+            # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+        elif str(key) in self.key_list:
             debugLog(f"用户按了{str(key)}键")
-            self.app_instance.deal_task_list(self.instruction_list, 1, 2)
-            # else:
-            #     if self.pre_key in self.key_list:
-            #         debugLog(f"用户按了{self.pre_key}加{str(key)}组合键")
-        # else:
-        #     self.pre_key = None
+            self.app_instance.deal_task_list(self.instruction_list[str(key)], 1, 2)
+            # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+        self.pre_key = str(key)
         if self.is_listening is False:
             return False  # 返回 False 停止监听
 

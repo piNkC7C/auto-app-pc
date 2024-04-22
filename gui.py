@@ -244,8 +244,59 @@ class APP(wx.Frame):
                 return click_res
             else:
                 return "未识别的类型"
+        elif task['actObjType'] == 'hotkey':
+            if task['action'] == 'press':
+                # 我们可以使用tuple()函数将这个数组（列表）转换为一个元组
+                hotkey_tuple = tuple(task['hotkey'])
+                debugLog(f"热键元组：{str(hotkey_tuple)}")
+                press_res = self.circle_press_hot_key(1, task['circleCount'], task['circleWaitTime'] / 1000,
+                                                      hotkey_tuple)
+                return press_res
+            else:
+                return "未识别的类型"
+        elif task['actObjType'] == 'key':
+            if task['action'] == 'press':
+                press_res = self.circle_press_key(1, task['circleCount'], task['circleWaitTime'] / 1000,
+                                                  task['key']['keyName'])
+                return press_res
+            else:
+                return "未识别的类型"
         else:
             return "未识别的任务"
+
+    def circle_press_key(self, press_num, max_num, wait_time, key):
+        try:
+            self.is_human = False
+            pyautogui.press(key)
+            self.is_human = True
+            press_res = True
+        except Exception as e:
+            debugLog("循环单键报错：" + str(e))
+            press_res = "循环单键报错：" + str(e)
+        press_num += 1
+        if press_num > max_num:
+            return press_res
+        else:
+            time.sleep(wait_time)
+            press_res = self.circle_press_key(press_num, max_num, wait_time, key)
+            return press_res
+
+    def circle_press_hot_key(self, press_num, max_num, wait_time, *key):
+        try:
+            self.is_human = False
+            pyautogui.hotkey(*key)
+            self.is_human = True
+            press_res = True
+        except Exception as e:
+            debugLog("循环热键报错：" + str(e))
+            press_res = "循环热键报错：" + str(e)
+        press_num += 1
+        if press_num > max_num:
+            return press_res
+        else:
+            time.sleep(wait_time)
+            press_res = self.circle_press_hot_key(press_num, max_num, wait_time, *key)
+            return press_res
 
     def openQW(self):
         debugLog("打开企业微信")
@@ -321,6 +372,7 @@ class APP(wx.Frame):
         if click_num > max_num:
             return click_res
         else:
+            time.sleep(wait_time)
             click_res = self.circle_move_click_pic(target_pic, x_percent, y_percent, click_num, max_num, wait_time,
                                                    move_click_wait_time, open_qw)
             return click_res
@@ -341,6 +393,7 @@ class APP(wx.Frame):
         if click_num > max_num:
             return click_res
         else:
+            time.sleep(wait_time)
             click_res = self.circle_move_click_position(x, y, click_num, max_num, wait_time, move_click_wait_time)
             return click_res
 

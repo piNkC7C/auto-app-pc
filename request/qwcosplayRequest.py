@@ -9,8 +9,8 @@ from tools.fileOperate import File
 
 class QWCosplayRequest:
     def __init__(self):
-        # self.base_url = "http://qwcosplay.iflying.com/api"
-        self.base_url = "http://172.16.61.31:7094"
+        self.base_url = "http://qwcosplay.iflying.com/api"
+        # self.base_url = "http://172.16.61.31:7094"
         self.timeout = 120
         self.file_manager = File()
 
