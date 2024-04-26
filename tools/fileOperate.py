@@ -106,12 +106,13 @@ class File(object):
         exe_dir = os.path.dirname(exe_file)
         return exe_dir
 
-    def delete_file(self, file_path):
-        try:
+    def delete_file(self, path_list):
+        # 构建文件路径
+        file_path = os.path.join(*path_list)
+        # 如果文件路径存在，则删除
+        if os.path.exists(file_path):
             os.remove(file_path)
-            debugLog(f"文件 {file_path} 删除成功")
-        except Exception as e:
-            debugLog(f"删除文件 {file_path} 失败：{e}")
+            debugLog(f"{file_path}已成功移除")
 
     def delete_files_with_name(self, directory, name):
         # 遍历目录中的文件

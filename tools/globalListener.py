@@ -105,36 +105,95 @@ class GlobalListener:
 
 
 class KeyListener:
-    def __init__(self, key_list, instruction_list):
+    def __init__(self, key_list, instruction_list, key_release_list):
         self.is_listening = False
-        debugLog(key_list)
-        self.key_list = [key_list[0], "Key.ctrl_l+Key.enter", "Key.ctrl_r+Key.enter"]
-        # self.key_num = key_list.__len__()
         self.instruction_list = instruction_list
-        self.pre_key = None
         self.app_instance = APP()
+        debugLog("按下按键数组")
+        debugLog(key_list)
+        self.key_list = key_list
+        self.pre_key = None
+        self.task_run = False
+        self.press_time = time.time()
+
+        debugLog("释放按键数组")
+        debugLog(key_release_list)
+        self.key_release_list = key_release_list
+        self.pre_release_key = None
+        self.release_task_run = False
+        self.release_time = time.time()
 
     def on_key_press(self, key):
-        debugLog("前一个键")
-        debugLog(self.pre_key)
-        debugLog("当前键")
-        debugLog(str(key))
-        if f"{self.pre_key}+{str(key)}" in self.key_list:
-            debugLog(f"用户按了组合非热键：{self.pre_key}+{str(key)}")
-            self.app_instance.deal_task_list(self.instruction_list[f"{self.pre_key}+{str(key)}"], 1, 2)
-            # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
-        elif str(key) in self.key_list:
-            debugLog(f"用户按了{str(key)}键")
-            self.app_instance.deal_task_list(self.instruction_list[str(key)], 1, 2)
-            # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+        now_press_time = time.time()
+        try:
+            interval_time = now_press_time - self.press_time
+            if interval_time < 1:
+                # debugLog(f"按键之间的间隔时间：{interval_time}")
+                # debugLog("前一个键")
+                # debugLog(self.pre_key)
+                # debugLog("当前键")
+                # debugLog(str(key))
+                # debugLog(f"{self.pre_key}+{str(key)}")
+                combine_key = f"{self.pre_key}+{str(key)}"
+                # debugLog(f"组合键：{combine_key}")
+                if combine_key in self.key_list:
+                    if not self.task_run:
+                        self.task_run = True
+                        debugLog(f"用户触发了按下按键类组合非热键：{combine_key}")
+                        self.app_instance.deal_task_list(self.instruction_list[f"{combine_key}"], 1, 2)
+                        # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+                elif str(key) in self.key_list:
+                    if not self.task_run:
+                        self.task_run = True
+                        debugLog(f"用户按了{str(key)}键")
+                        self.app_instance.deal_task_list(self.instruction_list[str(key)], 1, 2)
+                        # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+        except Exception as e:
+            debugLog(f"按下按键事件报错{e}")
+            pass
+        self.task_run = False
         self.pre_key = str(key)
+        self.press_time = now_press_time
+        if self.is_listening is False:
+            return False  # 返回 False 停止监听
+
+    def on_key_release(self, key):
+        now_release_time = time.time()
+        try:
+            interval_time = now_release_time - self.release_time
+            if interval_time < 1:
+                # debugLog(f"按键之间的间隔时间：{interval_time}")
+                # debugLog("前一个键")
+                # debugLog(self.pre_key)
+                # debugLog("当前键")
+                # debugLog(str(key))
+                # debugLog(f"{self.pre_key}+{str(key)}")
+                combine_key = f"{self.pre_release_key}+{str(key)}"
+                if combine_key in self.key_release_list:
+                    if not self.release_task_run:
+                        self.release_task_run = True
+                        debugLog(f"用户触发了释放按键类组合非热键：{combine_key}")
+                        self.app_instance.deal_task_list(self.instruction_list[f"{combine_key}"], 1, 2)
+                        # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+                elif str(key) in self.key_release_list:
+                    if not self.release_task_run:
+                        self.release_task_run = True
+                        debugLog(f"用户释放了{str(key)}键")
+                        self.app_instance.deal_task_list(self.instruction_list[str(key)], 1, 2)
+                        # self.app_instance.circle_press_hot_key(1, 0, 0, ('Ctrl', 'a',))
+        except Exception as e:
+            debugLog(f"释放按键事件报错{e}")
+            pass
+        self.release_task_run = False
+        self.pre_release_key = str(key)
+        self.release_time = now_release_time
         if self.is_listening is False:
             return False  # 返回 False 停止监听
 
     def start_listening(self):
         self.is_listening = True
         # 开始监听全局键盘点击事件
-        with KeyboardListener(on_press=self.on_key_press) as keyboard_listener:
+        with KeyboardListener(on_press=self.on_key_press, on_release=self.on_key_release) as keyboard_listener:
             # 持续监听鼠标和键盘事件，直到手动停止
             keyboard_listener.join()
 

@@ -1,14 +1,16 @@
 import wx
 from tools.fileOperate import File
+from config.config import Configs
 
 
 class TipPage(wx.Frame):
     def __init__(self, status, fontcolor1, fontcolor2, fontcolor3, bgcolor1, bgcolor2, bgcolor3):
         super().__init__(None, title="", style=wx.BORDER_NONE | wx.STAY_ON_TOP | wx.FRAME_NO_TASKBAR)
         self.file_manager = File()
-        app_config = self.file_manager.get_file_data_rb("assets/app.json")
+        self.config_data = Configs()
+        app_config = self.config_data.app_info
         app_name = app_config["app_name"]
-        # app_png = app_config["app_png"]
+        app_ico = app_config["app_ico"]
         self.login_info = self.file_manager.get_login_info()
 
         # 创建上中下三个静态文本

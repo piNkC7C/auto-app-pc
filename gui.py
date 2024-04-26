@@ -157,6 +157,7 @@ class APP(wx.Frame):
                                 asyncio.run(
                                     qwcosplay_task_interrupt(task_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                              interrupt_str))
+                            break
                         elif task['actObjType'] == 'task':
                             skip_step += task['skipTimes']
                             if task['waitTime'] != 0:

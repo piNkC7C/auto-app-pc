@@ -1,9 +1,9 @@
 import sys
 from cx_Freeze import setup, Executable
-from tools.fileOperate import File
+from config.config import Configs
 
-file_manager = File()
-app_config = file_manager.get_file_data_rb("assets/app.json")
+config_data = Configs()
+app_config = config_data.app_info
 app_name = app_config["app_name"]
 app_ico = app_config["app_ico"]
 

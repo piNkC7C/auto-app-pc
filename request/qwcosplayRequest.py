@@ -20,10 +20,14 @@ class QWCosplayRequest:
             debugLog(f"{full_url}请求参数：")
             debugLog(f"{kwargs}")
             info = self.file_manager.get_login_info()
-            # debugLog(info)
-            response = requests.request(method, full_url, timeout=self.timeout,
-                                        auth=HTTPBasicAuth(f"{info['feiassistid']}", info['feiassistauth']),
-                                        **kwargs)
+            if info:
+                # debugLog(info)
+                response = requests.request(method, full_url, timeout=self.timeout,
+                                            auth=HTTPBasicAuth(f"{info['feiassistid']}", info['feiassistauth']),
+                                            **kwargs)
+            else:
+                # debugLog(info)
+                response = requests.request(method, full_url, timeout=self.timeout, **kwargs)
             response.raise_for_status()  # 检查请求是否成功
             return response.json()
         except requests.exceptions.RequestException as e:

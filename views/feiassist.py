@@ -15,91 +15,14 @@ from log.log_record import debugLog
 from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status, qwcosplay_get_check_company_task, \
     qwcosplay_check_host_status, qwcosplay_quick_send_msg_task
 from .components.message import MessageBox
-
-
-class MyTaskBarIcon(TaskBarIcon):
-    def __init__(self, frame):
-        app_file_manager = File()
-        app_config = app_file_manager.get_file_data_rb("assets/app.json")
-        app_name = app_config["app_name"]
-        app_ico = app_config["app_ico"]
-        TaskBarIcon.__init__(self)
-        self.frame = frame
-
-        self.icon = wx.Icon(app_ico, wx.BITMAP_TYPE_ICO)
-        self.SetIcon(self.icon, "小飞托管")
-        # 创建一个菜单
-        self.menu = wx.Menu()
-
-        # 添加菜单项
-        self.open_item = self.menu.Append(wx.ID_ANY, "打开托管", kind=wx.ITEM_CHECK)
-        self.close_item = self.menu.Append(wx.ID_ANY, "关闭托管", kind=wx.ITEM_CHECK)
-        self.destroy_item = self.menu.Append(wx.ID_ANY, "退出应用")
-
-        # 绑定菜单项的事件处理函数
-        self.Bind(wx.EVT_MENU, self.OnOpenFei, self.open_item)
-        self.Bind(wx.EVT_MENU, self.OnCloseFei, self.close_item)
-        self.Bind(wx.EVT_MENU, self.OnDestroyFei, self.destroy_item)
-
-        # 检查当前的托管状态，并设置菜单项的勾选状态
-        if self.frame.fei_status:
-            self.open_item.Check()
-        else:
-            self.close_item.Check()
-
-        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarLeftDClick)
-        self.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnTaskBarRightUp)
-
-    def OnTaskBarLeftDClick(self, event):
-        # debugLog(self.frame.taskbar_show)
-        if not self.frame.taskbar_show:
-            self.frame.Show(True)
-        else:
-            pass
-
-    def OnTaskBarRightUp(self, event):
-        # 显示菜单
-        self.PopupMenu(self.menu)
-
-    def OnOpenFei(self, event):
-        self.OnCheck(self.close_item, self.open_item)
-        self.frame.get_fei_switch_state(True)
-
-    def OnCloseFei(self, event):
-        self.OnCheck(self.open_item, self.close_item)
-        self.frame.get_fei_switch_state(False)
-
-    def OnCheck(self, check, uncheck):
-        check.Check()
-        uncheck.Check(False)
-
-    def OnDestroyFei(self, event):
-        clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
-        debugLog(clear_res)
-        if clear_res['code'] == 200:
-            self.frame.get_fei_switch_state(False)
-            if self.frame.quick_task['code'] == 200:
-                self.frame.key_listening.stop_listening()
-            self.frame.all_close()
-            self.frame.Destroy()
-            self.Destroy()
-            # 结束应用程序的主事件循环
-            wx.App.Get().ExitMainLoop()
-        # pass
-
-    def OnChangeFei(self, event):
-        self.open_item.Check(False)
-        self.close_item.Check()
-        self.frame.get_fei_switch_state(False)
-        self.frame.all_close()
-        self.frame.Destroy()
-        self.Destroy()
+from tests.taskList import TestTaskRunner
+from config.config import Configs
 
 
 class FeiAssistPage(wx.Frame):
-    def __init__(self, callback):
-        app_file_manager = File()
-        app_config = app_file_manager.get_file_data_rb("assets/app.json")
+    def __init__(self, callback, taskbar_icon):
+        self.config_data = Configs()
+        app_config = self.config_data.app_info
         app_name = app_config["app_name"]
         app_ico = app_config["app_ico"]
         super().__init__(None, title=app_name, size=(550, 470), style=wx.NO_BORDER)
@@ -116,12 +39,6 @@ class FeiAssistPage(wx.Frame):
         self.offAI_page = TipPage("托管中断", 57, 117, 198, 251, 115, 115)
         self.status_page_show('online')
         self.message_queue_manager = MessageQueueManager()
-        self.quick_task = asyncio.run(qwcosplay_quick_send_msg_task())
-        if self.quick_task['code'] == 200:
-            debugLog("打开快捷键监听")
-            self.key_listening = KeyListener(self.quick_task['data']['keyList'], self.quick_task['data']['instructionList'])
-            self.key_listening_thread = threading.Thread(target=self.key_listening.start_listening)
-            self.key_listening_thread.start()
 
         # 居中窗口
         self.Center()
@@ -148,7 +65,7 @@ class FeiAssistPage(wx.Frame):
         # 最小化到托盘
         self.fei_status = False
         self.taskbar_show = True
-        self.taskbar_icon = MyTaskBarIcon(self)
+        self.taskbar_icon = taskbar_icon
 
         # 创建垂直tab
         self.vertical_tab = wx.Panel(self, size=(95, 470), pos=(0, 75))
@@ -209,6 +126,7 @@ class FeiAssistPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
+        self.OnCloseButtonClick("")
         del self.busy
 
     def OnLeftDown(self, event):
@@ -227,367 +145,9 @@ class FeiAssistPage(wx.Frame):
     def OnCloseButtonClick(self, event):
         self.taskbar_show = False
         self.Show(False)
-        # self.app_instance.deal_task_list(
-        #     [
-        #         # {
-        #         #     "_id": "660d038ca45d0000e1003c42",
-        #         #     "type": 0,
-        #         #     "saleId": "",
-        #         #     "instructionNo": 31,
-        #         #     "instructionName": "验证工作台激活状态",
-        #         #     "action": "verify",
-        #         #     "actObjType": "image",
-        #         #     "image": {
-        #         #         "picName": "workstand_act",
-        #         #         "picConfidence": 0.8,
-        #         #         "picLeft": 0.5,
-        #         #         "picTop": 0.5
-        #         #     },
-        #         #     "skipTimes": 1,
-        #         #     "waitTime": 0,
-        #         #     "circleCount": 0,
-        #         #     "circleWaitTime": 0,
-        #         #     "moveClickWaitTime": 0
-        #         # },
-        #         {
-        #             "_id": "660d03a9a45d0000e1003c43",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 32,
-        #             "instructionName": "点击工作台图标",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "workstand",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "660d03efa45d0000e1003c44",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 33,
-        #             "instructionName": "验证工作台的小飞助理打开状态",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "enter_contact",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 1,
-        #             "waitTime": 0,
-        #             "circleCount": 20,
-        #             "circleWaitTime": 100,
-        #             "moveClickWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "660d0430a45d0000e1003c45",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 34,
-        #             "instructionName": "点击工作台小飞助理",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "workstand_xiaofei",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 2000,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "660d049fa45d0000e1003c46",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 35,
-        #             "instructionName": "点击客户id输入框",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "panda",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 100,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "65fbf7f2b494be2f74c49305",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 8,
-        #             "instructionName": "粘贴文字",
-        #             "action": "paste",
-        #             "actObjType": "text",
-        #             "text": {
-        #                 "content": "wmu-p0CwAAMF9gDChOhuPIY-9qqSWTMw"
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 200,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "660d04e0a45d0000e1003c47",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 36,
-        #             "instructionName": "点击进入会话",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "enter_contact",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "65fd57cfb494be2f74c4930b",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 13,
-        #             "instructionName": "验证工具栏状态",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "zidingyi",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 1,
-        #             "waitTime": 0,
-        #             "circleCount": 20,
-        #             "circleWaitTime": 100,
-        #             "moveClickWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fbf802b494be2f74c49307",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 10,
-        #             "instructionName": "点击工具栏",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "help",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 1000,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         # {
-        #         #     "_id": "66069afdbb5820268bfdc655",
-        #         #     "type": 0,
-        #         #     "saleId": "",
-        #         #     "instructionNo": 26,
-        #         #     "instructionName": "验证小飞助理激活状态",
-        #         #     "action": "verify",
-        #         #     "actObjType": "image",
-        #         #     "image": {
-        #         #         "picName": "xiaofei_act",
-        #         #         "picConfidence": 1,
-        #         #         "picLeft": 0.5,
-        #         #         "picTop": 0.5
-        #         #     },
-        #         #     "skipTimes": 1,
-        #         #     "waitTime": 0,
-        #         #     "circleCount": 20,
-        #         #     "circleWaitTime": 100,
-        #         #     "moveClickWaitTime": 0
-        #         # },
-        #         {
-        #             "_id": "65fd580db494be2f74c4930c",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 14,
-        #             "instructionName": "点击小飞助理",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "xiaofei",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "66069b0abb5820268bfdc656",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 27,
-        #             "instructionName": "验证tab咨询激活状态",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "zixun_act",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 1,
-        #             "waitTime": 0,
-        #             "circleCount": 20,
-        #             "circleWaitTime": 100,
-        #             "moveClickWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "65fbf806b494be2f74c49308",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 11,
-        #             "instructionName": "点击tab_咨询",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "zixun",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "65fd59c5b494be2f74c49310",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 7,
-        #             "instructionName": "点击公司信息",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "company",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 5000,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "65fbf7f8b494be2f74c49306",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 9,
-        #             "instructionName": "点击发送",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "sendmsg",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "660d03a9a45d0000e1003c43",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 32,
-        #             "instructionName": "点击工作台图标",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "workstand",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #         {
-        #             "_id": "660d03efa45d0000e1003c44",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 33,
-        #             "instructionName": "验证工作台的小飞助理打开状态",
-        #             "action": "verify",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "enter_contact",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 1,
-        #             "waitTime": 0,
-        #             "circleCount": 20,
-        #             "circleWaitTime": 100,
-        #             "moveClickWaitTime": 0
-        #         },
-        #         {
-        #             "_id": "660d0430a45d0000e1003c45",
-        #             "type": 0,
-        #             "saleId": "",
-        #             "instructionNo": 34,
-        #             "instructionName": "点击工作台小飞助理",
-        #             "action": "move_click",
-        #             "actObjType": "image",
-        #             "image": {
-        #                 "picName": "workstand_xiaofei",
-        #                 "picConfidence": 0.8,
-        #                 "picLeft": 0.5,
-        #                 "picTop": 0.5
-        #             },
-        #             "skipTimes": 0,
-        #             "waitTime": 0,
-        #             "circleCount": 0,
-        #             "circleWaitTime": 0,
-        #             "moveClickWaitTime": 100
-        #         },
-        #     ], "1111111", 1)
-        # pass
+        # test_task_run = TestTaskRunner()
+        # self.app_instance.deal_task_list(test_task_run.test_task
+        #                                  , "1111111", 1)
 
     def OnButtonEnter(self, event):
         self.close_button.SetBackgroundColour(wx.Colour(251, 115, 115))
@@ -669,7 +229,6 @@ class FeiAssistPage(wx.Frame):
     def close_and_open_login_page(self):
         clear_res = asyncio.run(qwcosplay_clear_all_task(self.info['userid']))
         if clear_res['code'] == 200:
-            self.taskbar_icon.OnChangeFei(self.taskbar_icon.destroy_item)
             self.callback()
 
     def status_page_show(self, page):

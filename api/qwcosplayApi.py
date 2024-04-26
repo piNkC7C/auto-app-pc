@@ -4,6 +4,7 @@ import wx
 from request.qwcosplayRequest import QWCosplayRequest
 
 from log.log_record import debugLog
+from tests.taskList import TestTaskRunner
 
 # 创建QWCosplayRequest实例
 qwcosplay_request = QWCosplayRequest()
@@ -157,11 +158,12 @@ async def qwcosplay_check_host_status(UserId):
 
 
 async def qwcosplay_quick_send_msg_task():
-    # 返回值0通过，1不通过
     try:
-        # 发送POST请求
-        response = qwcosplay_request.get("/reply/saleManage/getQuickSendMsgTask")
+        # 发送GET请求
+        response = qwcosplay_request.get("/chatHelper/query/getQuickSendMsgTask")
         return response
+        # test_task_run = TestTaskRunner()
+        # return test_task_run.quick_task
     except Exception as e:
         debugLog("An error occurred during request:")
         debugLog(str(e))

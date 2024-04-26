@@ -3,17 +3,17 @@ import json
 import time
 import asyncio
 from datetime import datetime
-from tools.fileOperate import File
 from log.log_record import debugLog
 from api.qwcosplayApi import qwcosplay_task_start, qwcosplay_task_finish, qwcosplay_task_interrupt, \
     qwcosplay_user_watch_status
 from datetime import datetime
+from config.config import Configs
 
 
 class MessageQueueManager:
     def __init__(self):
-        file_manager = File()
-        queue_config = file_manager.get_file_data("assets/queue.json")
+        config_data = Configs()
+        queue_config = config_data.queue_info
         self.hostname = queue_config["hostname"]
         self.port = queue_config["port"]
         self.username = queue_config["username"]

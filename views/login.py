@@ -11,16 +11,20 @@ from tools.socketHandle import socketHandle
 from tools.fileOperate import File
 from tools.tools import CustomButton, get_local_ip, generate_object_id
 from log.log_record import debugLog
+from config.config import Configs
 
 
 class LoginPage(wx.Frame):
-    def __init__(self, callback):
-        app_file_manager = File()
-        app_config = app_file_manager.get_file_data_rb("assets/app.json")
+    def __init__(self, callback, taskbar_icon):
+        self.config_data = Configs()
+        app_config = self.config_data.app_info
         app_name = app_config["app_name"]
         app_ico = app_config["app_ico"]
         super().__init__(None, title=app_name, size=(280, 380), style=wx.NO_BORDER)
+
         self.callback = callback
+        self.taskbar_show = True
+        self.taskbar_icon = taskbar_icon
         self.SetBackgroundColour(wx.Colour(245, 245, 245))  # 设置窗口背景颜色为白色
 
         # 居中窗口
@@ -35,13 +39,24 @@ class LoginPage(wx.Frame):
         self.title_text = wx.StaticText(self.title_bar, label=app_name, pos=(10, 5))
         self.title_text.SetForegroundColour(wx.Colour(167, 166, 170))
 
+        # 创建最小化按钮
+        # self.Iconic_button = CustomButton(self.title_bar, label="—", pos=(215, 0), size=(35, 25), style=wx.NO_BORDER)
+        # font = wx.Font(wx.FontInfo(12).Bold())
+        # self.Iconic_button.SetFont(font)
+        # self.Iconic_button.SetForegroundColour(wx.Colour(0, 0, 0))
+        # self.Iconic_button.SetBackgroundColour(wx.Colour(245, 245, 245))
+        # self.Iconic_button.Bind(wx.EVT_BUTTON, self.OnIconicButtonClick)
+        # self.Iconic_button.Bind(wx.EVT_ENTER_WINDOW, self.OnIconicButtonEnter)
+        # self.Iconic_button.Bind(wx.EVT_LEAVE_WINDOW, self.OnIconicButtonLeave)
+
         # 创建关闭按钮
         self.close_button = CustomButton(self.title_bar, label="×", pos=(250, 0), size=(35, 25), style=wx.NO_BORDER)
         font = wx.Font(wx.FontInfo(12).Bold())
         self.close_button.SetFont(font)
         self.close_button.SetForegroundColour(wx.Colour(0, 0, 0))
         self.close_button.SetBackgroundColour(wx.Colour(245, 245, 245))
-        self.close_button.Bind(wx.EVT_BUTTON, self.OnCloseButtonClick)
+        # self.close_button.Bind(wx.EVT_BUTTON, self.OnCloseButtonClick)
+        self.close_button.Bind(wx.EVT_BUTTON, self.OnIconicButtonClick)
         self.close_button.Bind(wx.EVT_ENTER_WINDOW, self.OnButtonEnter)
         self.close_button.Bind(wx.EVT_LEAVE_WINDOW, self.OnButtonLeave)
 
@@ -96,6 +111,8 @@ class LoginPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
 
+        self.OnIconicButtonClick("")
+
     def OnLeftDown(self, event):
         self.CaptureMouse()
         self.delta = event.GetPosition()
@@ -112,10 +129,19 @@ class LoginPage(wx.Frame):
     def OnCloseButtonClick(self, event):
         self.socket_handler.disconnect()
         self.file_manager.delete_files_with_name("assets", "qrCode")
+        self.taskbar_icon.stop_key_listening()
         self.Destroy()
 
         # 结束应用程序的主事件循环
         wx.App.Get().ExitMainLoop()
+
+    def OnIconicButtonClick(self, event):
+        self.taskbar_show = False
+        self.Show(False)
+
+    def all_close(self):
+        self.socket_handler.disconnect()
+        self.file_manager.delete_files_with_name("assets", "qrCode")
 
     def OnButtonEnter(self, event):
         self.close_button.SetBackgroundColour(wx.Colour(251, 115, 115))
@@ -127,6 +153,12 @@ class LoginPage(wx.Frame):
         self.close_button.SetBackgroundColour(wx.Colour(245, 245, 245))
         self.close_button.SetForegroundColour(wx.Colour(0, 0, 0))
 
+    def OnIconicButtonEnter(self, event):
+        self.Iconic_button.SetBackgroundColour(wx.Colour(226, 226, 226))
+
+    def OnIconicButtonLeave(self, event):
+        self.Iconic_button.SetBackgroundColour(wx.Colour(245, 245, 245))
+
     def start_socket_listener(self):
         # 开始监听事件
         self.socket_handler.openSocket(self.handle_message)
@@ -135,7 +167,6 @@ class LoginPage(wx.Frame):
         # self.file_manager.update_login_list(data['data']['userid'], data['data'])
         self.file_manager.update_login_info(data['data'])
         self.file_manager.delete_files_with_name("assets", "qrCode")
-        # self.file_manager.delete_file(f"assets/qrCode{self.feiassistid}.png")
         # 在主线程中关闭当前窗口并打开FeiAssistPage
         wx.CallAfter(self.close_and_open_fei_assist_page)
 

@@ -41,12 +41,18 @@ def initLog():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
+    # 获取当前目录
+    current_directory = os.getcwd()
+    print(current_directory)
+
     # 创建"log"目录，如果不存在的话
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
 
     # 创建文件处理器
-    file_handler = TimedRotatingFileHandler(filename=os.path.join(log_dir, "info.log"), when="D", interval=1,
+    file_handler = TimedRotatingFileHandler(filename=f"{current_directory}\\{log_dir}\\info.log",
+                                            when="D",
+                                            interval=1,
                                             backupCount=3, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
 
