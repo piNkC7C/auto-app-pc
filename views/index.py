@@ -5,6 +5,7 @@ import os
 import sys
 import subprocess
 import shutil
+import ctypes
 
 from .login import LoginPage
 from .feiassist import FeiAssistPage
@@ -14,7 +15,7 @@ from log.log_record import debugLog
 from api.miniwechatApi import miniwechat_get_feiassistpic, miniwechat_check_login_status
 from api.qwcosplayApi import qwcosplay_quick_send_msg_task
 from .components.loading import LoadingCom, CustomBusyDialog
-from tools.updateApp import check_for_updates, download_update
+from tools.updateApp import check_for_updates, download_update, download_update_exe
 from config.config import Configs
 from .components.taskBarIcon import MyTaskBarIcon
 from tools.globalListener import GlobalListener, KeyListener
@@ -30,6 +31,7 @@ class IndexPage(wx.Frame):
         self.app_version = self.config_data.app_version
         debugLog(f"版本号：{self.app_version}")
         self.app_name = self.config_data.app_name
+        self.update_name = self.config_data.update_name
         self.taskbar_icon = None
 
         # self.app_info = self.config_data.app_info
@@ -63,8 +65,7 @@ class IndexPage(wx.Frame):
             if dlg_result == wx.OK:
                 # 用户点击了确定按钮
                 sys.exit()
-        else:
-            del self.busy
+        elif check_res == 2:
             self.download_wait = wx.BusyInfo("下载资源...")
             self.quick_task = asyncio.run(qwcosplay_quick_send_msg_task())
             self.key_listening = None
@@ -76,26 +77,47 @@ class IndexPage(wx.Frame):
                 self.key_listening_thread = threading.Thread(target=self.key_listening.start_listening)
                 self.key_listening_thread.start()
             self.init_data()
+        else:
+            if check_res['code'] == 997:
+                dlg_result = wx.MessageBox("请关闭代理，重新打开应用！", "提示", wx.OK | wx.ICON_INFORMATION)
+                # 检查用户的响应
+                if dlg_result == wx.OK:
+                    # 用户点击了确定按钮
+                    sys.exit()
 
         # self.busy = LoadingCom(self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
         # self.busy = CustomBusyDialog(self)
         # self.busy.Show()
 
     def check_update(self):
+        """
+
+        :return: 0(更新且安装包下载成功)，1（更新但安装包下载失败），2（无需更新），返回获取版本号接口报错信息（获取版本号接口出问题）
+        """
         update_res = check_for_updates(self.app_version)
+        debugLog("检测更新结果")
         debugLog(update_res)
         debugLog(f"{self.app_name}{self.app_version}")
-        if update_res:
-            del self.busy
+        del self.busy
+        if update_res['code'] == 0:
+            debugLog("管理员权限")
+            debugLog(ctypes.windll.shell32.IsUserAnAdmin())
+            user_admin = ctypes.windll.shell32.IsUserAnAdmin()
+            if user_admin == 0:
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, sys.argv[0], None, 1)
+                sys.exit()
             self.update_wait = wx.BusyInfo("下载安装包...")
             # 备用目录
             download_res = download_update(self.app_name)
+            download_res = download_update(self.update_name)
             if download_res:
                 debugLog(f"{self.app_name}{update_res['message']}下载完成")
                 return 0
             return 1
-        else:
+        elif update_res['code'] == 1:
             return 2
+        else:
+            return update_res
 
     def init_data(self):
         # 队列配置
@@ -103,18 +125,21 @@ class IndexPage(wx.Frame):
         # 设置当前目录信息
         # self.file_manager.write_json_info_by_folder(['assets', 'app_info.json'], self.config_data.app_info)
         # 删除原配置文件
-        self.file_manager.delete_file(['assets', 'queue.json'])
-        self.file_manager.delete_file(['assets', 'app.json'])
+        self.file_manager.delete_file([self.config_data.app_info['data_dir'], 'assets', 'queue.json'])
+        self.file_manager.delete_file([self.config_data.app_info['data_dir'], 'assets', 'app.json'])
         # 下载图片
-        oldPicList = self.file_manager.get_json_info_by_folder(['assets', 'images.json'])
+        oldPicList = self.file_manager.get_json_info_by_folder(
+            [self.config_data.app_info['data_dir'], 'assets', 'images.json'])
         picList = asyncio.run(miniwechat_get_feiassistpic(oldPicList))
         if picList['code'] == 0:
-            self.file_manager.write_json_info_by_folder(['assets', 'images.json'],
-                                                        picList['data']['pics'])
+            self.file_manager.write_json_info_by_folder(
+                [self.config_data.app_info['data_dir'], 'assets', 'images.json'],
+                picList['data']['pics'])
             if picList['data']['newPics'].__len__() > 0:
                 for pic in picList['data']['newPics']:
                     self.file_manager.download_image(pic['PicUrl'], pic['PicName'],
-                                                     ['res', pic['PicRate'], pic['PicName']])
+                                                     [self.config_data.app_info['data_dir'], 'res', pic['PicRate'],
+                                                      pic['PicName']])
         # 设置开机自启动
         has_start_use = self.file_manager.check_json_by_folder(self.config_data.has_start_use_path)
         if not has_start_use:

@@ -29,6 +29,7 @@ from tools.error import ImageNotFoundException
 from api.qwcosplayApi import qwcosplay_task_start, qwcosplay_task_finish, qwcosplay_task_interrupt, \
     qwcosplay_user_watch_status, qwcosplay_change_host_status
 from tools.windows import screen_scale_rate
+from config.config import Configs
 
 
 def movePosition(x, y):
@@ -89,6 +90,7 @@ class APP(wx.Frame):
         self.is_human = True
         self.fei_status = False
         self.file_manager = File()
+        self.config_data = Configs()
 
     def deal_task_json(self, task_json, userid):
         # external_id = task_json['externalId']
@@ -210,7 +212,7 @@ class APP(wx.Frame):
             if task['action'] == 'move_click':
                 # 点击图片
                 scale_rate = screen_scale_rate()
-                target_pic = self.wait_pic(f"res/{scale_rate}/{task['image']['picName']}.png",
+                target_pic = self.wait_pic(f"{self.config_data.app_info['data_dir']}\\res\\{scale_rate}\\{task['image']['picName']}.png",
                                            task['image']['picConfidence'], 1,
                                            task['circleCount'],
                                            task['circleWaitTime'] / 1000)
@@ -225,7 +227,7 @@ class APP(wx.Frame):
                     return click_res
             elif task['action'] == 'verify':
                 scale_rate = screen_scale_rate()
-                target_pic = self.wait_pic(f"res/{scale_rate}/{task['image']['picName']}.png",
+                target_pic = self.wait_pic(f"{self.config_data.app_info['data_dir']}\\res\\{scale_rate}\\{task['image']['picName']}.png",
                                            task['image']['picConfidence'], 1,
                                            task['circleCount'], task['circleWaitTime'] / 1000)
                 return target_pic

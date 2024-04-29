@@ -26,8 +26,8 @@ class File(object):
             os.makedirs(folder_name)
             return "fei_assist0"
 
-    def check_qr_code_existence(self, fei_id):
-        qr_code_path = os.path.join("assets", f"qrCode{fei_id}.png")
+    def check_qr_code_existence(self, fei_id, data_dir):
+        qr_code_path = os.path.join(data_dir, "assets", f"qrCode{fei_id}.png")
         return os.path.exists(qr_code_path)
 
     def check_login_info(self, ):
@@ -41,8 +41,9 @@ class File(object):
                 return False
         return False
 
-    def update_login_info(self, login_info):
-        login_info_path = os.path.join("FeiAssistData", "LoginInfo")
+    def update_login_info(self, login_info, data_dir):
+        login_info_dir = os.path.join(data_dir, "FeiAssistData")
+        login_info_path = os.path.join(data_dir, "FeiAssistData", "LoginInfo")
         if os.path.exists(login_info_path):
             with custom_open(login_info_path, "r") as f:
                 data = json.load(f)
@@ -50,7 +51,7 @@ class File(object):
             with custom_open(login_info_path, "w") as f:
                 json.dump(data, f, ensure_ascii=False)
         else:
-            os.makedirs("FeiAssistData", exist_ok=True)
+            os.makedirs(login_info_dir, exist_ok=True)
             with custom_open(login_info_path, "w") as f:
                 json.dump(login_info, f, ensure_ascii=False)
 

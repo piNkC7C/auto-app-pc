@@ -74,7 +74,7 @@ class LoginPage(wx.Frame):
         # debugLog(self.feiassistid)
         self.local_ip = get_local_ip()
 
-        qr_exists = self.file_manager.check_qr_code_existence(self.feiassistid)
+        qr_exists = self.file_manager.check_qr_code_existence(self.feiassistid, app_config['data_dir'])
         if qr_exists:
             pass
         else:
@@ -90,7 +90,7 @@ class LoginPage(wx.Frame):
             # 创建 QRCodeGenerator 实例
             generator = QRCodeGenerator(link=link, fei_id=self.feiassistid)
             # 调用 generate_qr_code 方法生成二维码
-            generator.generate_qr_code()
+            generator.generate_qr_code(app_config['data_dir'])
 
         # 实例化SocketHandler类
         self.socket_handler = socketHandle(f"{self.feiassistid}{self.local_ip}", None)
@@ -100,7 +100,7 @@ class LoginPage(wx.Frame):
         self.socket_thread.start()
 
         # 在窗口中央放置二维码
-        qr_path = f"assets/qrCode{self.feiassistid}.png"
+        qr_path = f"{app_config['data_dir']}/assets/qrCode{self.feiassistid}.png"
         qr_image = wx.Image(qr_path, wx.BITMAP_TYPE_PNG)
         qr_image = qr_image.Scale(200, 200)  # 缩放二维码图像大小为150x150
         qr_bitmap = wx.StaticBitmap(self, -1, wx.Bitmap(qr_image))
@@ -128,7 +128,7 @@ class LoginPage(wx.Frame):
 
     def OnCloseButtonClick(self, event):
         self.socket_handler.disconnect()
-        self.file_manager.delete_files_with_name("assets", "qrCode")
+        self.file_manager.delete_files_with_name(f"{self.config_data.app_info['data_dir']}\\assets", "qrCode")
         self.taskbar_icon.stop_key_listening()
         self.Destroy()
 
@@ -141,7 +141,7 @@ class LoginPage(wx.Frame):
 
     def all_close(self):
         self.socket_handler.disconnect()
-        self.file_manager.delete_files_with_name("assets", "qrCode")
+        self.file_manager.delete_files_with_name(f"{self.config_data.app_info['data_dir']}\\assets", "qrCode")
 
     def OnButtonEnter(self, event):
         self.close_button.SetBackgroundColour(wx.Colour(251, 115, 115))
@@ -165,8 +165,8 @@ class LoginPage(wx.Frame):
 
     def handle_message(self, data):
         # self.file_manager.update_login_list(data['data']['userid'], data['data'])
-        self.file_manager.update_login_info(data['data'])
-        self.file_manager.delete_files_with_name("assets", "qrCode")
+        self.file_manager.update_login_info(data['data'], self.config_data.app_info['data_dir'])
+        self.file_manager.delete_files_with_name(f"{self.config_data.app_info['data_dir']}\\assets", "qrCode")
         # 在主线程中关闭当前窗口并打开FeiAssistPage
         wx.CallAfter(self.close_and_open_fei_assist_page)
 

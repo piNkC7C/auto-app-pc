@@ -83,7 +83,3 @@ def get_to_startup(app_name):
         except FileNotFoundError:
             return False
 
-
-def get_windows_username():
-    username = os.environ['USERNAME']
-    return username

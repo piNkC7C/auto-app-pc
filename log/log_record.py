@@ -2,6 +2,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import queue
 import os
+from config.config import Configs
 
 
 # def initLog():
@@ -41,16 +42,16 @@ def initLog():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    # 获取当前目录
-    current_directory = os.getcwd()
-    print(current_directory)
+    # 获取数据目录
+    config_data = Configs()
+    directory = config_data.app_info['data_dir']
 
     # 创建"log"目录，如果不存在的话
-    log_dir = "logs"
+    log_dir = f"{directory}\\logs"
     os.makedirs(log_dir, exist_ok=True)
 
     # 创建文件处理器
-    file_handler = TimedRotatingFileHandler(filename=f"{current_directory}\\{log_dir}\\info.log",
+    file_handler = TimedRotatingFileHandler(filename=f"{log_dir}\\info.log",
                                             when="D",
                                             interval=1,
                                             backupCount=3, encoding="utf-8")

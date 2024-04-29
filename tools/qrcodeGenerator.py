@@ -13,9 +13,9 @@ class QRCodeGenerator:
         self.fei_id = fei_id
         # self.file_manager = File()
 
-    def generate_qr_code(self):
+    def generate_qr_code(self, data_dir):
         # 获取当前执行文件的目录
-        file_path = os.path.join("assets", f"qrCode{self.fei_id}.png")
+        file_path = os.path.join(data_dir, "assets", f"qrCode{self.fei_id}.png")
         # debugLog(file_path)
         qr = qrcode.QRCode(
             version=1,

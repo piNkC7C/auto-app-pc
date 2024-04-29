@@ -6,6 +6,7 @@ import sys
 import win32event
 import win32api
 import winerror
+import ctypes
 
 # 访问其他文件
 from log.log_record import initLog, debugLog
