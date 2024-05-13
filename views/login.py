@@ -23,7 +23,7 @@ class LoginPage(wx.Frame):
         super().__init__(None, title=app_name, size=(280, 380), style=wx.NO_BORDER)
 
         self.callback = callback
-        self.taskbar_show = True
+        self.taskbar_show = False
         self.taskbar_icon = taskbar_icon
         self.SetBackgroundColour(wx.Colour(245, 245, 245))  # 设置窗口背景颜色为白色
 
@@ -111,7 +111,7 @@ class LoginPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
 
-        self.OnIconicButtonClick("")
+        # self.OnIconicButtonClick("")
 
     def OnLeftDown(self, event):
         self.CaptureMouse()
@@ -164,7 +164,6 @@ class LoginPage(wx.Frame):
         self.socket_handler.openSocket(self.handle_message)
 
     def handle_message(self, data):
-        # self.file_manager.update_login_list(data['data']['userid'], data['data'])
         self.file_manager.update_login_info(data['data'], self.config_data.app_info['data_dir'])
         self.file_manager.delete_files_with_name(f"{self.config_data.app_info['data_dir']}\\assets", "qrCode")
         # 在主线程中关闭当前窗口并打开FeiAssistPage

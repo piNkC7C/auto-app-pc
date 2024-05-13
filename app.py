@@ -33,6 +33,10 @@ if __name__ == '__main__':
             # consume_queue_thread = MyThread(target_function=consume_message, args=("feiTest",))
             # consume_queue_thread.start()
             app.MainLoop()
+    except Exception as e:
+        debugLog("应用程序报错")
+        debugLog(str(e))
+        # sys.exit()
     finally:
         if mutex:
             win32api.CloseHandle(mutex)

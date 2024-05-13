@@ -118,7 +118,6 @@ class APP(wx.Frame):
         :param open_qw: 任务来源：0队列任务，1获取切换企业任务接口，2获取快捷键任务接口
         :return: 任务完成情况
         """
-        # info = self.file_manager.get_login_info()
         if open_qw == 1:
             open_res = self.openQW()
             if not open_res:
@@ -212,10 +211,11 @@ class APP(wx.Frame):
             if task['action'] == 'move_click':
                 # 点击图片
                 scale_rate = screen_scale_rate()
-                target_pic = self.wait_pic(f"{self.config_data.app_info['data_dir']}\\res\\{scale_rate}\\{task['image']['picName']}.png",
-                                           task['image']['picConfidence'], 1,
-                                           task['circleCount'],
-                                           task['circleWaitTime'] / 1000)
+                target_pic = self.wait_pic(
+                    f"{self.config_data.app_info['data_dir']}\\res\\{scale_rate}\\{task['image']['picName']}.png",
+                    task['image']['picConfidence'], 1,
+                    task['circleCount'],
+                    task['circleWaitTime'] / 1000)
                 type_target = type(target_pic)
                 if type_target == dict:
                     return target_pic
@@ -227,9 +227,10 @@ class APP(wx.Frame):
                     return click_res
             elif task['action'] == 'verify':
                 scale_rate = screen_scale_rate()
-                target_pic = self.wait_pic(f"{self.config_data.app_info['data_dir']}\\res\\{scale_rate}\\{task['image']['picName']}.png",
-                                           task['image']['picConfidence'], 1,
-                                           task['circleCount'], task['circleWaitTime'] / 1000)
+                target_pic = self.wait_pic(
+                    f"{self.config_data.app_info['data_dir']}\\res\\{scale_rate}\\{task['image']['picName']}.png",
+                    task['image']['picConfidence'], 1,
+                    task['circleCount'], task['circleWaitTime'] / 1000)
                 return target_pic
         elif task['actObjType'] == 'text':
             if task['action'] == 'paste':

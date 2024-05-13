@@ -11,7 +11,7 @@ class TipPage(wx.Frame):
         app_config = self.config_data.app_info
         app_name = app_config["app_name"]
         app_ico = app_config["app_ico"]
-        self.login_info = self.file_manager.get_login_info()
+        self.login_info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
 
         # 创建上中下三个静态文本
         self.upper_text = wx.StaticText(self, label=f"{app_name}",

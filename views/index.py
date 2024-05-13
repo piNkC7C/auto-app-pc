@@ -1,3 +1,5 @@
+import time
+
 import wx
 import threading
 import asyncio
@@ -109,8 +111,9 @@ class IndexPage(wx.Frame):
             self.update_wait = wx.BusyInfo("下载安装包...")
             # 备用目录
             download_res = download_update(self.app_name)
-            download_res = download_update(self.update_name)
-            if download_res:
+            download_update_res = download_update_exe(self.update_name)
+            time.sleep(0.5)
+            if download_res and download_update_res:
                 debugLog(f"{self.app_name}{update_res['message']}下载完成")
                 return 0
             return 1
@@ -149,7 +152,7 @@ class IndexPage(wx.Frame):
                 self.file_manager.write_json_info_by_folder(self.config_data.has_start_use_path, {})
         self.taskbar_icon = MyTaskBarIcon(None, False, self.quick_task, self.key_listening)
         # 验证登录
-        info = self.file_manager.get_login_info()
+        info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
         check_res = asyncio.run(miniwechat_check_login_status(info))
         debugLog("登陆验证结果")
         debugLog(check_res)
@@ -158,29 +161,29 @@ class IndexPage(wx.Frame):
                 del self.download_wait
                 # self.busy.on_close()
                 # busy.on_close()
-                self.show_fei_assist_page()
+                self.show_fei_assist_page(False)
             else:
                 del self.download_wait
                 # self.busy.on_close()
-                self.show_login_page()
+                self.show_login_page(False)
 
-    def show_fei_assist_page(self):
+    def show_fei_assist_page(self, page_show):
         self.Show(False)  # 隐藏主页窗口
-        fei_assist_callback = lambda: self.show_login_page()
+        fei_assist_callback = lambda: self.show_login_page(True)
         fei_frame = FeiAssistPage(callback=fei_assist_callback, taskbar_icon=self.taskbar_icon)
         self.taskbar_icon.OnChangeFei(self.taskbar_icon.destroy_item, 'feiassist', fei_frame)
-        # fei_frame.Show()
-        info = self.file_manager.get_login_info()
+        fei_frame.Show(page_show)
+        info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
         # 实例化SocketHandler类
         self.socket = socketHandle(f"{info['feiassistid']}", fei_frame.get_fei_switch_state)
 
-    def show_login_page(self):
+    def show_login_page(self, page_show):
         self.stop_socket_listener()
         self.Show(False)  # 隐藏主页窗口
-        login_callback = lambda: self.show_fei_assist_page()
+        login_callback = lambda: self.show_fei_assist_page(True)
         frame = LoginPage(callback=login_callback, taskbar_icon=self.taskbar_icon)
         self.taskbar_icon.OnChangeFei(self.taskbar_icon.destroy_item, 'login', frame)
-        # frame.Show()
+        frame.Show(page_show)
 
     def stop_socket_listener(self):
         if self.socket:

@@ -55,9 +55,10 @@ def download_update_exe(update_name):
             newAppData = newApp.read()
             out_file.write(newAppData)
 
-        time.sleep(2)
+        time.sleep(0.5)
 
         os.replace(f"{update_name}_new.exe", f"{update_name}.exe")
+        time.sleep(0.5)
         return True
     except Exception as e:
         debugLog(f"Failed to download update:{str(e)}")

@@ -68,7 +68,9 @@ class MyTaskBarIcon(TaskBarIcon):
 
     def OnTaskBarLeftDClick(self, event):
         # debugLog(self.frame.taskbar_show)
+        # print("打开界面")
         if not self.frame.taskbar_show:
+            # print(self.frame.taskbar_show)
             self.frame.Show(True)
         else:
             pass
@@ -118,9 +120,12 @@ class MyTaskBarIcon(TaskBarIcon):
         clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
         debugLog(clear_res)
         if clear_res['code'] == 200:
-            self.frame.get_fei_switch_state(False)
-            self.frame.all_close()
-            self.frame.Destroy()
+            try:
+                self.frame.get_fei_switch_state(False)
+                self.frame.all_close()
+                self.frame.Destroy()
+            except Exception as e:
+                debugLog(str(e))
             self.stop_key_listening()
             self.Destroy()
             # 结束应用程序的主事件循环
@@ -128,8 +133,11 @@ class MyTaskBarIcon(TaskBarIcon):
         # pass
 
     def OnDestroyLogin(self, event):
-        self.frame.all_close()
-        self.frame.Destroy()
+        try:
+            self.frame.all_close()
+            self.frame.Destroy()
+        except Exception as e:
+            debugLog(str(e))
         self.stop_key_listening()
         self.Destroy()
         # 结束应用程序的主事件循环

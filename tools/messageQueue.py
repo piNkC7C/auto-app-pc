@@ -100,6 +100,7 @@ class MessageQueueManager:
                             debugLog(body)
                             task_json = json.loads(body.decode('utf-8'))
                             # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
+                            # time.sleep(10)
                             debugLog(task_json)
                             deal_task(task_json, userid)
                         except Exception as deal_task_error:

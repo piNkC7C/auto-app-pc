@@ -15,31 +15,9 @@ class File(object):
     def __init__(self):
         pass
 
-    def get_fei_assist_id(self):
-        folder_name = os.path.join("FeiAssistData", "LoginList")
-        if os.path.exists(folder_name) and os.path.isdir(folder_name):
-            # 文件夹已存在，计算子文件个数
-            files = [f for f in os.listdir(folder_name) if os.path.isfile(os.path.join(folder_name, f))]
-            return f"fei_assist{len(files)}"
-        else:
-            # 文件夹不存在，创建文件夹并返回 100000000000
-            os.makedirs(folder_name)
-            return "fei_assist0"
-
     def check_qr_code_existence(self, fei_id, data_dir):
         qr_code_path = os.path.join(data_dir, "assets", f"qrCode{fei_id}.png")
         return os.path.exists(qr_code_path)
-
-    def check_login_info(self, ):
-        login_info_path = os.path.join("FeiAssistData", "LoginInfo")
-        if os.path.exists(login_info_path):
-            with custom_open(login_info_path, "r") as f:
-                login_info_data = json.load(f)
-                userid = login_info_data.get("userid")
-                if userid:
-                    return True
-                return False
-        return False
 
     def update_login_info(self, login_info, data_dir):
         login_info_dir = os.path.join(data_dir, "FeiAssistData")
@@ -61,26 +39,8 @@ class File(object):
             debugLog("Login Info:")
             debugLog(login_info)
 
-    def update_login_list(self, userid, login_info):
-        login_list_path = os.path.join("FeiAssistData", "LoginList")
-        if not os.path.exists(login_list_path):
-            os.makedirs(login_list_path)
-
-        files = os.listdir(login_list_path)
-        if len(files) == 0:
-            file_path = os.path.join(login_list_path, f"{userid}.json")
-            with custom_open(file_path, "w") as f:
-                json.dump(login_info, f)
-        else:
-            if f"{userid}.json" in files:
-                return  # 如果文件已存在则退出函数
-            else:
-                file_path = os.path.join(login_list_path, f"{userid}.json")
-                with custom_open(file_path, "w") as f:
-                    json.dump(login_info, f)
-
-    def get_login_info(self):
-        login_info_path = os.path.join("FeiAssistData", "LoginInfo")
+    def get_login_info(self, data_dir):
+        login_info_path = os.path.join(data_dir, "FeiAssistData", "LoginInfo")
         if os.path.exists(login_info_path):
             with custom_open(login_info_path, "r") as f:
                 login_info = json.load(f)

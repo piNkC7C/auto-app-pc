@@ -5,6 +5,7 @@ from requests.auth import HTTPBasicAuth
 from log.log_record import debugLog
 
 from tools.fileOperate import File
+from config.config import Configs
 
 
 class QWCosplayRequest:
@@ -13,13 +14,14 @@ class QWCosplayRequest:
         # self.base_url = "http://172.16.61.31:7094"
         self.timeout = 120
         self.file_manager = File()
+        self.config_data = Configs()
 
     def request(self, method, url, **kwargs):
         full_url = self.base_url + url
         try:
             debugLog(f"{full_url}请求参数：")
             debugLog(f"{kwargs}")
-            info = self.file_manager.get_login_info()
+            info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
             if info:
                 # debugLog(info)
                 response = requests.request(method, full_url, timeout=self.timeout,

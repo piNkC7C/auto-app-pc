@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "朱会潇·销售助理"
-#define MyAppVersion "0.3"
+#define MyAppVersion "0.4"
 #define MyAppPublisher "zsj"
 #define MyAppExeName "朱会潇·销售助理.exe"
 #define MyAppAssocName MyAppName + ""

@@ -32,7 +32,7 @@ class FeiAssistPage(wx.Frame):
         self.font12 = wx.Font(wx.FontInfo(12).FaceName('Microsoft YaHei UI'))
         self.font16 = wx.Font(wx.FontInfo(16).FaceName('Microsoft YaHei UI'))
         self.file_manager = File()
-        self.info = self.file_manager.get_login_info()
+        self.info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
         self.app_instance = APP()
         self.online_page = TipPage("在线", 57, 117, 198, 228, 240, 255)
         self.onAI_page = TipPage("托管中", 7, 193, 96, 228, 255, 230)
@@ -64,7 +64,7 @@ class FeiAssistPage(wx.Frame):
 
         # 最小化到托盘
         self.fei_status = False
-        self.taskbar_show = True
+        self.taskbar_show = False
         self.taskbar_icon = taskbar_icon
 
         # 创建垂直tab
@@ -85,7 +85,7 @@ class FeiAssistPage(wx.Frame):
         self.rect_panel.SetBackgroundColour(wx.Colour(255, 255, 255))  # 设置矩形背景颜色为白色
         self.rect_panel.SetForegroundColour(wx.Colour(0, 0, 0))  # 设置矩形前景颜色为黑色
         self.rect_panel_avatar = wx.Panel(self.tab_pages["账号设置"], size=(50, 50), pos=(75, 55))
-        login_info = self.file_manager.get_login_info()
+        login_info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
         self.load_image_from_url(login_info['avatar'], self.rect_panel_avatar)
         self.rect_panel_name = wx.StaticText(self.tab_pages["账号设置"], label=login_info['name'], pos=(145, 62))
         # default_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
@@ -126,7 +126,7 @@ class FeiAssistPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
-        self.OnCloseButtonClick("")
+        # self.OnCloseButtonClick("")
         del self.busy
 
     def OnLeftDown(self, event):
@@ -148,6 +148,10 @@ class FeiAssistPage(wx.Frame):
         # test_task_run = TestTaskRunner()
         # self.app_instance.deal_task_list(test_task_run.test_task
         #                                  , "1111111", 1)
+        # self.message_queue_manager.insert_message_task({
+        #     "UserId": self.info["userid"],
+        #     "Status": 1
+        # }, f"Fei_{self.info['userid']}", self.deal_queue_error, "")
 
     def OnButtonEnter(self, event):
         self.close_button.SetBackgroundColour(wx.Colour(251, 115, 115))

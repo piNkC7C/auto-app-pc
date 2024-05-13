@@ -4,7 +4,7 @@ import os
 class Configs:
     def __init__(self):
         self.win_username = os.environ['USERNAME']
-        self.app_version = 'v0.3'
+        self.app_version = 'v0.4'
         self.app_name = '朱会潇·销售助理'
         self.update_name = 'update'
         roaming_dir = os.path.join(os.getenv('APPDATA'), 'zhuhuixiao')
