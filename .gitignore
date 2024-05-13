@@ -1,7 +1,9 @@
+/*.log
+/*.spec
+/*.pyc
 /.idea
 /build
 /dist
-/*.log
 /FeiAssistData
 /assets
 /logs
