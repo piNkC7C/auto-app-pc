@@ -6,6 +6,7 @@ import shutil
 import time
 from api.miniwechatApi import miniwechat_get_feiassistversion
 import asyncio
+import subprocess
 from log.log_record import debugLog
 
 # 更新服务器 URL
@@ -57,7 +58,14 @@ def download_update_exe(update_name):
 
         time.sleep(0.5)
 
-        os.replace(f"{update_name}_new.exe", f"{update_name}.exe")
+        result = subprocess.run(["taskkill", "/f", "/im", "{}.exe".format(update_name)], capture_output=True, text=True)
+        debugLog("结束进程结果")
+        debugLog(result)
+        time.sleep(5)
+        if result.returncode == 0 or result.returncode == 128:
+            # 替换当前版本
+            debugLog("替换更新程序")
+            os.replace(f"{update_name}_new.exe", f"{update_name}.exe")
         time.sleep(0.5)
         return True
     except Exception as e:

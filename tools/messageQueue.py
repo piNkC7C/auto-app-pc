@@ -68,75 +68,81 @@ class MessageQueueManager:
                 # 休眠一段时间后重试连接
                 time.sleep(10)  # 休眠10秒后重试连接
 
-    def consume_message_task(self, queue, deal_task, consume_state, deal_err, deal_noerr, userid):
-        connection = None
-        circle = True
-        while circle:
-            try:
-                connection = self.connect()
-            except Exception as e:
-                deal_err()
-                debugLog("连接消息队列时出错:")
-                debugLog(str(e))
-                # 释放之前的连接资源
-                if connection:
-                    connection.close()
-                # 休眠一段时间后重试连接
-                time.sleep(10)  # 休眠10秒后重试连接
-                debugLog("尝试重新连接")
+    def consume_message_task(self, queue, deal_task, consume_state, deal_err, deal_noerr, userid, fei_num):
+        # 清空队列连接
+        self.stop_consume_message_task(queue)
+        debugLog("队列已连接数组：")
+        debugLog(self.consumer_tag)
+        if self.consumer_tag.__len__() == 0:
+            connection = None
+            circle = True
+            while circle:
+                try:
+                    connection = self.connect()
+                except Exception as e:
+                    deal_err()
+                    debugLog("连接消息队列时出错:")
+                    debugLog(str(e))
+                    # 释放之前的连接资源
+                    if connection:
+                        connection.close()
+                    # 休眠一段时间后重试连接
+                    time.sleep(10)  # 休眠10秒后重试连接
+                    debugLog("尝试重新连接")
 
-            try:
-                if connection:
-                    circle = False
-                    channel = connection.channel()
-                    channel.queue_declare(queue=queue, durable=True)
-                    channel.basic_qos(prefetch_count=1)
+                try:
+                    if connection:
+                        circle = False
+                        channel = connection.channel()
+                        channel.queue_declare(queue=queue, durable=True)
+                        channel.basic_qos(prefetch_count=1)
 
-                    def callback(ch, method, properties, body):
-                        debugLog(f"{queue}收到任务")
+                        def callback(ch, method, properties, body):
+                            debugLog(f"{queue}收到任务")
+                            try:
+                                # task = body.decode('utf-8')
+                                debugLog("队列消息原型")
+                                debugLog(body)
+                                task_json = json.loads(body.decode('utf-8'))
+                                # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
+                                # time.sleep(10)
+                                debugLog(task_json)
+                                deal_task(task_json, userid, fei_num)
+                            except Exception as deal_task_error:
+                                # deal_err()
+                                debugLog("处理队列任务时出错:")
+                                debugLog(str(deal_task_error))
+
+                            ch.basic_ack(delivery_tag=method.delivery_tag)
+
+                        tag = channel.basic_consume(queue=queue, on_message_callback=callback)
+                        debugLog(f"队列tag：{tag}")
+                        index = next(
+                            (i for i, obj in enumerate(self.consumer_tag) if getattr(obj, 'queue', None) == queue),
+                            None)
+                        # if index is None:
+                        self.consumer_tag.append({
+                            "queue": queue,
+                            "connection": connection,
+                            "channel": channel,
+                            "consumer_tag": tag,
+                        })
+                        # deal_noerr()
+                        debugLog(f"{queue}等待任务...")
                         try:
-                            # task = body.decode('utf-8')
-                            debugLog("队列消息原型")
-                            debugLog(body)
-                            task_json = json.loads(body.decode('utf-8'))
-                            # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
-                            # time.sleep(10)
-                            debugLog(task_json)
-                            deal_task(task_json, userid)
-                        except Exception as deal_task_error:
-                            # deal_err()
-                            debugLog("处理队列任务时出错:")
-                            debugLog(str(deal_task_error))
-
-                        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-                    tag = channel.basic_consume(queue=queue, on_message_callback=callback)
-                    debugLog(f"队列tag：{tag}")
-                    index = next((i for i, obj in enumerate(self.consumer_tag) if getattr(obj, 'queue', None) == queue),
-                                 None)
-                    # if index is None:
-                    self.consumer_tag.append({
-                        "queue": queue,
-                        "connection": connection,
-                        "channel": channel,
-                        "consumer_tag": tag,
-                    })
-                    # deal_noerr()
-                    debugLog(f"{queue}等待任务...")
-                    try:
-                        channel.start_consuming()
-                    except Exception as e:
-                        debugLog(str(e))
-            except Exception as e:
-                # circle = True
-                # deal_err()
-                debugLog("消息队列出错:")
-                debugLog(str(e))
-                # 释放之前的连接资源
-                if connection:
-                    connection.close()
-                # 休眠一段时间后重试连接
-                time.sleep(10)  # 休眠10秒后重试连接
+                            channel.start_consuming()
+                        except Exception as e:
+                            debugLog(str(e))
+                except Exception as e:
+                    # circle = True
+                    # deal_err()
+                    debugLog("消息队列出错:")
+                    debugLog(str(e))
+                    # 释放之前的连接资源
+                    if connection:
+                        connection.close()
+                    # 休眠一段时间后重试连接
+                    time.sleep(10)  # 休眠10秒后重试连接
 
     def stop_consume_message_task(self, queue):
         try:
@@ -146,11 +152,13 @@ class MessageQueueManager:
                 for index, tag in enumerate(self.consumer_tag):
                     if tag["queue"] == queue:
                         debugLog(f"{queue}关闭消费...")
-                        tag["channel"].basic_cancel(tag["consumer_tag"])
+                        res = tag["channel"].basic_cancel(tag["consumer_tag"])
+                        debugLog("关闭消费结果")
+                        debugLog(res)
                         # tag["connection"].close()
                         # 关闭连接
-                        self.consumer_tag.pop(index)
                         debugLog(f"删除队列tag：{tag['consumer_tag']}")
+                        self.consumer_tag.pop(index)
         except Exception as e:
             debugLog("停止消费队列时出错:")
             debugLog(str(e))

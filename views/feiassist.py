@@ -1,3 +1,5 @@
+import time
+
 import wx
 from wx.adv import TaskBarIcon
 import urllib.request
@@ -150,7 +152,8 @@ class FeiAssistPage(wx.Frame):
         #                                  , "1111111", 1)
         # self.message_queue_manager.insert_message_task({
         #     "UserId": self.info["userid"],
-        #     "Status": 1
+        #     "Status": time.time(),
+        #     "taskList":test_task_run.test_task
         # }, f"Fei_{self.info['userid']}", self.deal_queue_error, "")
 
     def OnButtonEnter(self, event):
@@ -265,7 +268,7 @@ class FeiAssistPage(wx.Frame):
             consume_thread = threading.Thread(target=self.message_queue_manager.consume_message_task,
                                               args=(queue, self.app_instance.deal_task_json, True,
                                                     self.deal_queue_error, self.deal_queue_no_error,
-                                                    self.info['userid'],))
+                                                    self.info['userid'], self.app_instance.fei_num,))
             consume_thread.start()
             self.OnCloseButtonClick("")
         else:
@@ -288,6 +291,7 @@ class FeiAssistPage(wx.Frame):
                         if change_res['code'] == 200:
                             debugLog("准备打开托管")
                             self.app_instance.fei_status = switch
+                            self.app_instance.fei_num += 1
                             self.switch.refresh_switch(switch)
                             self.status_page_show('onAI')
                             self.taskbar_icon.OnCheck(self.taskbar_icon.open_item, self.taskbar_icon.close_item)

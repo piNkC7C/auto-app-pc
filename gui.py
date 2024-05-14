@@ -89,28 +89,37 @@ class APP(wx.Frame):
         super().__init__(None, title="")
         self.is_human = True
         self.fei_status = False
+        self.fei_num = 0
         self.file_manager = File()
         self.config_data = Configs()
 
-    def deal_task_json(self, task_json, userid):
-        # external_id = task_json['externalId']
-        external_res = asyncio.run(qwcosplay_user_watch_status(task_json['id'], task_json['externalId']))
-        # external_res = {
-        #     "code": 200,
-        #     "data": 1
-        # }
-        debugLog(f"验证客户是否监管任务id：（{task_json['id']}）")
-        debugLog(external_res)
-        if external_res['code'] == 200 and external_res['data'] == 1:
-            task_list = task_json['taskList']
-            self.deal_task_list(task_list, task_json['id'])
+    def deal_task_json(self, task_json, userid, num):
+        debugLog(f"传入fei_num：{num}")
+        debugLog(f"fei_num：{self.fei_num}")
+        if num == self.fei_num:
+            # external_id = task_json['externalId']
+            external_res = asyncio.run(qwcosplay_user_watch_status(task_json['id'], task_json['externalId']))
+            # external_res = {
+            #     "code": 200,
+            #     "data": 1
+            # }
+            debugLog(f"验证客户是否监管任务id：（{task_json['id']}）")
+            debugLog(external_res)
+            if external_res['code'] == 200 and external_res['data'] == 1:
+                task_list = task_json['taskList']
+                self.deal_task_list(task_list, task_json['id'],0,num)
+            else:
+                debugLog(f"任务未完成：客户监管状态有问题")
+                asyncio.run(
+                    qwcosplay_task_interrupt(task_json['id'], datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                             "客户监管状态有问题"))
         else:
-            debugLog(f"任务未完成：客户监管状态有问题")
+            debugLog(f"任务未完成：中途关闭托管")
             asyncio.run(
                 qwcosplay_task_interrupt(task_json['id'], datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                         "客户监管状态有问题"))
+                                         "中途关闭托管"))
 
-    def deal_task_list(self, task_list, task_id, open_qw=0):
+    def deal_task_list(self, task_list, task_id, open_qw=0, num=-1):
         """
         处理任务数组
         :param task_list:
@@ -131,7 +140,7 @@ class APP(wx.Frame):
         for index, task in enumerate(task_list):
             debugLog("任务")
             debugLog(task)
-            if self.fei_status or open_qw != 0:
+            if (self.fei_status and self.fei_num == num) or open_qw != 0:
                 if skip_step == 0:
                     task_res = self.deal_task(task, open_qw)
                     if task['action'] == 'verify':
@@ -318,11 +327,11 @@ class APP(wx.Frame):
                 if win32gui.IsIconic(hwnd):
                     debugLog("企业微信最小化")
                     # 如果窗口最小化，则恢复窗口
-                    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                    # win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
                 elif not win32gui.IsWindowVisible(hwnd):
                     debugLog("企业微信关闭")
                     # 如果窗口不可见，则显示窗口
-                    win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+                    # win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
                 win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
                 # 设置窗口大小
                 win32gui.SetForegroundWindow(hwnd)

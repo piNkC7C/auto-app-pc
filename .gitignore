@@ -8,3 +8,5 @@
 /assets
 /logs
 /res
+/__pycache__
+*/__pycache__
