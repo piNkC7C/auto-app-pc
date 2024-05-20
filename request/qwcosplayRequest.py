@@ -1,11 +1,13 @@
 import requests
 import wx
+import asyncio
 from requests.auth import HTTPBasicAuth
 
 from log.log_record import debugLog
 
 from tools.fileOperate import File
 from config.config import Configs
+from api.miniwechatApi import miniwechat_get_feiassistauth
 
 
 class QWCosplayRequest:
@@ -24,6 +26,7 @@ class QWCosplayRequest:
             info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
             if info:
                 # debugLog(info)
+                asyncio.run(miniwechat_get_feiassistauth(f"{info['feiassistid']}", info['feiassistauth']))
                 response = requests.request(method, full_url, timeout=self.timeout,
                                             auth=HTTPBasicAuth(f"{info['feiassistid']}", info['feiassistauth']),
                                             **kwargs)
@@ -32,11 +35,19 @@ class QWCosplayRequest:
                 response = requests.request(method, full_url, timeout=self.timeout, **kwargs)
             response.raise_for_status()  # 检查请求是否成功
             return response.json()
+        except requests.exceptions.HTTPError as http_err:
+            debugLog("qwcosplay.iflying.com error occurred：")
+            debugLog(str(http_err))
+            if http_err.response.status_code == 401:
+                debugLog("鉴权失败")
+            return {
+                "code": http_err.response.status_code,
+                "message": str(http_err)
+            }
         except requests.exceptions.RequestException as e:
-            print(e)
-            debugLog("An error occurred during request:")
+            debugLog("qwcosplay.iflying.com error occurred during request:")
             debugLog(str(e))
-            wx.MessageBox("qwcosplay.iflying.com接口报错，请联系管理员！", "提示", wx.OK | wx.ICON_INFORMATION)
+            # wx.MessageBox("qwcosplay.iflying.com接口报错，请联系管理员！", "提示", wx.OK | wx.ICON_INFORMATION)
             return {
                 "code": 999,
                 "message": str(e)

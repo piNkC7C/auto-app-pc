@@ -277,14 +277,14 @@ class FeiAssistPage(wx.Frame):
     def get_fei_switch_state(self, switch):
         self.fei_status = switch
         if switch:
-            status_check = asyncio.run(qwcosplay_check_host_status(self.info["userid"]))
             debugLog("验证托管状态")
-            debugLog(status_check)
+            status_check = asyncio.run(qwcosplay_check_host_status(self.info["userid"]))
             if status_check['code'] == 200 and status_check['data'] == 0:
-                company_check = asyncio.run(qwcosplay_get_check_company_task())
+                debugLog(status_check)
                 debugLog("获取验证企业任务")
-                debugLog(company_check)
+                company_check = asyncio.run(qwcosplay_get_check_company_task())
                 if company_check['code'] == 200:
+                    debugLog(company_check)
                     open_res = self.app_instance.deal_task_list(company_check['data'], 1, 1)
                     if open_res:
                         change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 1))
@@ -300,12 +300,12 @@ class FeiAssistPage(wx.Frame):
                             #     "UserId": self.info["userid"],
                             #     "Status": 1
                             # }, "feiAssistStatus", self.deal_queue_error)
-                        else:
-                            wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
-                    else:
-                        wx.MessageBox(f"验证当前登录企业失败", "提示", wx.OK | wx.ICON_INFORMATION)
-            else:
-                wx.MessageBox(f"托管开启失败：请检查是否已在其他地方打开托管", "提示", wx.OK | wx.ICON_INFORMATION)
+            #             else:
+            #                 wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
+            #         else:
+            #             wx.MessageBox(f"验证当前登录企业失败", "提示", wx.OK | wx.ICON_INFORMATION)
+            # else:
+            #     wx.MessageBox(f"托管开启失败：请检查是否已在其他地方打开托管", "提示", wx.OK | wx.ICON_INFORMATION)
         else:
             change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 0))
             if change_res['code'] == 200:
@@ -319,8 +319,8 @@ class FeiAssistPage(wx.Frame):
                 #     "Status": 0
                 # }, "feiAssistStatus", self.deal_queue_error)
                 # self.message_queue_manager.stop_consume_message_task(self.info["userid"])
-            else:
-                wx.MessageBox(f"托管关闭失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
+            # else:
+            #     wx.MessageBox(f"托管关闭失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
 
     def all_close(self):
         self.app_instance.Destroy()

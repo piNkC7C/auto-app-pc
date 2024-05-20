@@ -18,7 +18,7 @@ async def miniwechat_get_feiassistid():
     except Exception as e:
         debugLog("mimniwechat/getFeiAssistIdErr:")
         debugLog(str(e))
-        wx.MessageBox(f"mimniwechat/getFeiAssistId：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"mimniwechat/getFeiAssistId：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 888,
             "message": str(e)
@@ -33,7 +33,7 @@ async def miniwechat_get_feiassistpic(oldPicList):
     except Exception as e:
         debugLog("mimniwechat/getFeiPicsErr:")
         debugLog(str(e))
-        wx.MessageBox(f"mimniwechat/getFeiPics：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"mimniwechat/getFeiPics：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 888,
             "message": str(e)
@@ -47,7 +47,7 @@ async def miniwechat_check_login_status(json):
     except Exception as e:
         debugLog("mimniwechat/checkLoginStatusErr:")
         debugLog(str(e))
-        wx.MessageBox(f"mimniwechat/checkLoginStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"mimniwechat/checkLoginStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 888,
             "message": str(e)
@@ -64,7 +64,25 @@ async def miniwechat_get_feiassistversion(version):
     except Exception as e:
         debugLog("mimniwechat/getFeiAssistVersionErr:")
         debugLog(str(e))
-        wx.MessageBox(f"mimniwechat/getFeiAssistVersion：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"mimniwechat/getFeiAssistVersion：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        return {
+            "code": 888,
+            "message": str(e)
+        }
+
+
+async def miniwechat_get_feiassistauth(userName, passWord):
+    try:
+        # 发送POST请求
+        response = miniwechat_request.get("/queryFeiAuth", params={
+            "userName": userName,
+            "passWord": passWord,
+        })
+        return response
+    except Exception as e:
+        debugLog("mimniwechat/queryFeiAuthErr:")
+        debugLog(str(e))
+        # wx.MessageBox(f"mimniwechat/queryFeiAuth：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 888,
             "message": str(e)

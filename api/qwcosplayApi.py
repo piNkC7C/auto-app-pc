@@ -22,9 +22,9 @@ async def qwcosplay_task_start(taskId, startTime):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/publicTask/task/start error occurred during request:")
         debugLog(str(e))
-        wx.MessageBox(f"/publicTask/task/start：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/publicTask/task/start：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
@@ -41,9 +41,9 @@ async def qwcosplay_task_finish(taskId, finishTime):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/publicTask/task/finish error occurred during request:")
         debugLog(str(e))
-        wx.MessageBox(f"/publicTask/task/finish：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/publicTask/task/finish：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
@@ -61,9 +61,9 @@ async def qwcosplay_task_interrupt(taskId, interruptTime, interruptReason):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/publicTask/task/interrupt error occurred during request:")
         debugLog(str(e))
-        wx.MessageBox(f"/publicTask/task/interrupt：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/publicTask/task/interrupt：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
@@ -78,9 +78,9 @@ async def qwcosplay_clear_all_task(fyQyUserId):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/publicTask/task/clearAllTask error occurred during request:")
         debugLog(str(e))
-        wx.MessageBox(f"/publicTask/task/clearAllTask：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/publicTask/task/clearAllTask：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
@@ -96,7 +96,7 @@ async def qwcosplay_change_host_status(UserId, Status):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/reply/saleManage/changeHostingStatus error occurred during request:")
         debugLog(str(e))
         # wx.MessageBox(f"/reply/saleManage/changeHostingStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
@@ -115,9 +115,9 @@ async def qwcosplay_user_watch_status(taskId, userId):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/reply/saleManage/getUserWatchStatus error occurred during request:")
         debugLog(str(e))
-        wx.MessageBox(f"/reply/saleManage/getUserWatchStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/reply/saleManage/getUserWatchStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
@@ -130,9 +130,9 @@ async def qwcosplay_get_check_company_task():
         response = qwcosplay_request.get("/reply/saleManage/getCheckCompanyTask")
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/reply/saleManage/getCheckCompanyTask error occurred during request:")
         debugLog(str(e))
-        wx.MessageBox(f"/reply/saleManage/getCheckCompanyTask：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/reply/saleManage/getCheckCompanyTask：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
@@ -148,7 +148,7 @@ async def qwcosplay_check_host_status(UserId):
         })
         return response
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/reply/saleManage/checkHostingStatus error occurred during request:")
         debugLog(str(e))
         # wx.MessageBox(f"/reply/saleManage/changeHostingStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
@@ -165,9 +165,9 @@ async def qwcosplay_quick_send_msg_task():
         # test_task_run = TestTaskRunner()
         # return test_task_run.quick_task
     except Exception as e:
-        debugLog("An error occurred during request:")
+        debugLog("/chatHelper/query/getQuickSendMsgTask error occurred during request:")
         debugLog(str(e))
-        # wx.MessageBox(f"/reply/saleManage/changeHostingStatus：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
+        # wx.MessageBox(f"/chatHelper/query/getQuickSendMsgTask：{str(e)}", "提示", wx.OK | wx.ICON_INFORMATION)
         return {
             "code": 999,
             "message": str(e)
