@@ -16,23 +16,23 @@ class MiniWechatRequest:
             response.raise_for_status()  # 检查请求是否成功
             return response.json()
         except requests.exceptions.ProxyError as e:
-            debugLog("A proxy error occurred:")
+            debugLog("A miniwechat.iflying.com ProxyError occurred：")
             debugLog(str(e))
             return {
                 "code": 997,
                 "message": str(e)
             }
         except requests.exceptions.ConnectionError as e:
-            debugLog("A Connection error occurred:")
+            debugLog("A miniwechat.iflying.com ConnectionError occurred：")
             debugLog(str(e))
             return {
                 "code": 998,
                 "message": str(e)
             }
         except requests.exceptions.RequestException as e:
-            debugLog("Another error occurred:")
+            debugLog("Another miniwechat.iflying.com error occurred：")
             debugLog(str(e))
-            wx.MessageBox("miniwechat接口报错，请联系管理员！", "提示", wx.OK | wx.ICON_INFORMATION)
+            # wx.MessageBox("miniwechat接口报错，请联系管理员！", "提示", wx.OK | wx.ICON_INFORMATION)
             return {
                 "code": 999,
                 "message": str(e)

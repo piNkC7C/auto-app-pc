@@ -15,7 +15,7 @@ from gui import APP
 from .online import TipPage
 from log.log_record import debugLog
 from api.qwcosplayApi import qwcosplay_clear_all_task, qwcosplay_change_host_status, qwcosplay_get_check_company_task, \
-    qwcosplay_check_host_status, qwcosplay_quick_send_msg_task
+    qwcosplay_check_host_status
 from .components.message import MessageBox
 from tests.taskList import TestTaskRunner
 from config.config import Configs
@@ -40,7 +40,7 @@ class FeiAssistPage(wx.Frame):
         self.onAI_page = TipPage("托管中", 7, 193, 96, 228, 255, 230)
         self.offAI_page = TipPage("托管中断", 57, 117, 198, 251, 115, 115)
         self.status_page_show('online')
-        self.message_queue_manager = MessageQueueManager()
+        self.message_queue_manager = MessageQueueManager(self.deal_queue_error,self.deal_queue_no_error,self.app_instance.deal_task_json)
 
         # 居中窗口
         self.Center()
@@ -150,11 +150,12 @@ class FeiAssistPage(wx.Frame):
         # test_task_run = TestTaskRunner()
         # self.app_instance.deal_task_list(test_task_run.test_task
         #                                  , "1111111", 1)
-        # self.message_queue_manager.insert_message_task({
+        # message_queue_manager = MessageQueueManager(self.deal_queue_error,self.deal_queue_no_error,self.app_instance.deal_task_json)
+        # message_queue_manager.insert_message_task({
         #     "UserId": self.info["userid"],
-        #     "Status": time.time(),
-        #     "taskList":test_task_run.test_task
-        # }, f"Fei_{self.info['userid']}", self.deal_queue_error, "")
+        #     "id": time.time(),
+        #     "taskList": "task"
+        # }, f"Fei_{self.info['userid']}")
 
     def OnButtonEnter(self, event):
         self.close_button.SetBackgroundColour(wx.Colour(251, 115, 115))
@@ -234,9 +235,9 @@ class FeiAssistPage(wx.Frame):
         # debugLog("Switch Account Button Clicked!")
 
     def close_and_open_login_page(self):
-        clear_res = asyncio.run(qwcosplay_clear_all_task(self.info['userid']))
-        if clear_res['code'] == 200:
-            self.callback()
+        # clear_res = asyncio.run(qwcosplay_clear_all_task(self.info['userid']))
+        # if clear_res['code'] == 200:
+        self.callback()
 
     def status_page_show(self, page):
         if page == 'online':
@@ -255,10 +256,16 @@ class FeiAssistPage(wx.Frame):
             pass
 
     def deal_queue_error(self):
+        self.app_instance.fei_status = False
+        self.switch.refresh_switch(False)
         self.status_page_show('offAI')
+        self.taskbar_icon.OnCheck(self.taskbar_icon.close_item, self.taskbar_icon.open_item)
 
     def deal_queue_no_error(self):
+        self.app_instance.fei_status = True
+        self.switch.refresh_switch(True)
         self.status_page_show('onAI')
+        self.taskbar_icon.OnCheck(self.taskbar_icon.open_item, self.taskbar_icon.close_item)
 
     def start_threading(self, queue, status):
         if status:
@@ -266,13 +273,12 @@ class FeiAssistPage(wx.Frame):
             listener_thread = threading.Thread(target=global_listener.start_listening)
             listener_thread.start()
             consume_thread = threading.Thread(target=self.message_queue_manager.consume_message_task,
-                                              args=(queue, self.app_instance.deal_task_json, True,
-                                                    self.deal_queue_error, self.deal_queue_no_error,
-                                                    self.info['userid'], self.app_instance.fei_num,))
+                                              args=(queue,self.info['userid'],self.app_instance.fei_num,))
             consume_thread.start()
             self.OnCloseButtonClick("")
         else:
             self.message_queue_manager.stop_consume_message_task(f"Fei_{self.info['userid']}")
+            # self.message_queue_manager.close_connection()
 
     def get_fei_switch_state(self, switch):
         self.fei_status = switch
@@ -322,7 +328,15 @@ class FeiAssistPage(wx.Frame):
             # else:
             #     wx.MessageBox(f"托管关闭失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
 
+    # def deal_web_close(self, switch):
+    # self.fei_status = switch
+    # self.app_instance.fei_status = switch
+    # self.switch.refresh_switch(switch)
+    # self.status_page_show('offAI')
+    # self.taskbar_icon.OnCheck(self.taskbar_icon.close_item, self.taskbar_icon.open_item)
+
     def all_close(self):
+        self.start_threading(f"Fei_{self.info['userid']}", False)
         self.app_instance.Destroy()
         self.online_page.Destroy()
         self.onAI_page.Destroy()

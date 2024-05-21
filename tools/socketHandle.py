@@ -9,6 +9,7 @@ class socketHandle:
     def __init__(self, socket_id, deal_no_web):
         self.is_human = False
         self.socket_id = socket_id
+        self.deal_no_web = deal_no_web
         self.sio = socketio.Client()
 
         @self.sio.on('connect')
@@ -19,13 +20,13 @@ class socketHandle:
         @self.sio.on('disconnect')
         def on_disconnect():
             if self.is_human:
-                debugLog('手动断开')
+                debugLog('退出应用，手动断开')
                 debugLog(f'{self.socket_id} disconnected from server')
             else:
-                debugLog('断网了')
+                debugLog('断网或远程主机断连')
                 debugLog(f'{self.socket_id} disconnected from server')
-                if deal_no_web:
-                    deal_no_web(False)
+                # if deal_no_web:
+                #     deal_no_web(False)
 
         self.sio.connect('http://124.71.179.1:4745')
         # self.sio.connect('http://172.16.61.6:4745')

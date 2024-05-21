@@ -86,6 +86,8 @@ class IndexPage(wx.Frame):
                 if dlg_result == wx.OK:
                     # 用户点击了确定按钮
                     sys.exit()
+            else:
+                sys.exit()
 
         # self.busy = LoadingCom(self.app_info['app_name'], 57, 117, 198, 228, 240, 255)
         # self.busy = CustomBusyDialog(self)

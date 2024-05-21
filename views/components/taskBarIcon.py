@@ -117,19 +117,19 @@ class MyTaskBarIcon(TaskBarIcon):
             self.key_listening.stop_listening()
 
     def OnDestroyFei(self, event):
-        clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
-        debugLog(clear_res)
-        if clear_res['code'] == 200:
-            try:
-                self.frame.get_fei_switch_state(False)
-                self.frame.all_close()
-                self.frame.Destroy()
-            except Exception as e:
-                debugLog(str(e))
-            self.stop_key_listening()
-            self.Destroy()
-            # 结束应用程序的主事件循环
-            wx.App.Get().ExitMainLoop()
+        # clear_res = asyncio.run(qwcosplay_clear_all_task(self.frame.info['userid']))
+        # debugLog(clear_res)
+        # if clear_res['code'] == 200:
+        try:
+            # self.frame.get_fei_switch_state(False)
+            self.frame.all_close()
+            self.frame.Destroy()
+        except Exception as e:
+            debugLog(str(e))
+        self.stop_key_listening()
+        self.Destroy()
+        # 结束应用程序的主事件循环
+        wx.App.Get().ExitMainLoop()
         # pass
 
     def OnDestroyLogin(self, event):
@@ -148,7 +148,7 @@ class MyTaskBarIcon(TaskBarIcon):
             if self.frame is not None:
                 self.open_item.Check(False)
                 self.close_item.Check()
-                self.frame.get_fei_switch_state(False)
+                # self.frame.get_fei_switch_state(False)
                 self.frame.all_close()
                 self.frame.Destroy()
             self.login_status = False

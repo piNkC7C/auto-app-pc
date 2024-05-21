@@ -1,13 +1,14 @@
 import json
 import wx
 
-from request.qwcosplayRequest import QWCosplayRequest
+from request.qwcosplayRequest import QWCosplayRequest, QWCosplayRequestNoAuth
 
 from log.log_record import debugLog
 from tests.taskList import TestTaskRunner
 
 # 创建QWCosplayRequest实例
 qwcosplay_request = QWCosplayRequest()
+qwcosplay_request_no_auth = QWCosplayRequestNoAuth()
 
 
 # 任务开始
@@ -160,7 +161,7 @@ async def qwcosplay_check_host_status(UserId):
 async def qwcosplay_quick_send_msg_task():
     try:
         # 发送GET请求
-        response = qwcosplay_request.get("/chatHelper/query/getQuickSendMsgTask")
+        response = qwcosplay_request_no_auth.get("/chatHelper/query/getQuickSendMsgTask")
         return response
         # test_task_run = TestTaskRunner()
         # return test_task_run.quick_task

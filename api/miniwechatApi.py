@@ -71,7 +71,7 @@ async def miniwechat_get_feiassistversion(version):
         }
 
 
-async def miniwechat_get_feiassistauth(userName, passWord):
+def miniwechat_get_feiassistauth(userName, passWord):
     try:
         # 发送POST请求
         response = miniwechat_request.get("/queryFeiAuth", params={
