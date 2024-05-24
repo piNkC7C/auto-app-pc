@@ -40,7 +40,8 @@ class FeiAssistPage(wx.Frame):
         self.onAI_page = TipPage("托管中", 7, 193, 96, 228, 255, 230)
         self.offAI_page = TipPage("托管中断", 57, 117, 198, 251, 115, 115)
         self.status_page_show('online')
-        self.message_queue_manager = MessageQueueManager(self.deal_queue_error,self.deal_queue_no_error,self.app_instance.deal_task_json)
+        self.message_queue_manager = MessageQueueManager(self.deal_queue_error, self.deal_queue_no_error,
+                                                         self.app_instance.deal_task_json)
 
         # 居中窗口
         self.Center()
@@ -129,6 +130,7 @@ class FeiAssistPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
         # self.OnCloseButtonClick("")
+        self.reconnect = False
         del self.busy
 
     def OnLeftDown(self, event):
@@ -150,7 +152,8 @@ class FeiAssistPage(wx.Frame):
         # test_task_run = TestTaskRunner()
         # self.app_instance.deal_task_list(test_task_run.test_task
         #                                  , "1111111", 1)
-        # message_queue_manager = MessageQueueManager(self.deal_queue_error,self.deal_queue_no_error,self.app_instance.deal_task_json)
+        # message_queue_manager = MessageQueueManager(self.deal_queue_error, self.deal_queue_no_error,
+        #                                             self.app_instance.deal_task_json)
         # message_queue_manager.insert_message_task({
         #     "UserId": self.info["userid"],
         #     "id": time.time(),
@@ -273,7 +276,7 @@ class FeiAssistPage(wx.Frame):
             listener_thread = threading.Thread(target=global_listener.start_listening)
             listener_thread.start()
             consume_thread = threading.Thread(target=self.message_queue_manager.consume_message_task,
-                                              args=(queue,self.info['userid'],self.app_instance.fei_num,))
+                                              args=(queue, self.info['userid'], self.app_instance.fei_num,))
             consume_thread.start()
             self.OnCloseButtonClick("")
         else:
@@ -306,12 +309,15 @@ class FeiAssistPage(wx.Frame):
                             #     "UserId": self.info["userid"],
                             #     "Status": 1
                             # }, "feiAssistStatus", self.deal_queue_error)
-            #             else:
-            #                 wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
-            #         else:
-            #             wx.MessageBox(f"验证当前登录企业失败", "提示", wx.OK | wx.ICON_INFORMATION)
-            # else:
-            #     wx.MessageBox(f"托管开启失败：请检查是否已在其他地方打开托管", "提示", wx.OK | wx.ICON_INFORMATION)
+                        else:
+                            debugLog(f"get_fei_switch_state，托管开启失败{change_res}")
+                            # wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
+                    else:
+                        debugLog(f"get_fei_switch_state，验证当前登录企业失败")
+                        # wx.MessageBox(f"验证当前登录企业失败", "提示", wx.OK | wx.ICON_INFORMATION)
+            else:
+                debugLog(f"get_fei_switch_state，托管开启失败：请检查是否已在其他地方打开托管")
+                # wx.MessageBox(f"托管开启失败：请检查是否已在其他地方打开托管", "提示", wx.OK | wx.ICON_INFORMATION)
         else:
             change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 0))
             if change_res['code'] == 200:
@@ -325,15 +331,32 @@ class FeiAssistPage(wx.Frame):
                 #     "Status": 0
                 # }, "feiAssistStatus", self.deal_queue_error)
                 # self.message_queue_manager.stop_consume_message_task(self.info["userid"])
-            # else:
+            else:
+                debugLog(f"get_fei_switch_state，托管关闭失败：{change_res}")
             #     wx.MessageBox(f"托管关闭失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
 
-    # def deal_web_close(self, switch):
-    # self.fei_status = switch
-    # self.app_instance.fei_status = switch
-    # self.switch.refresh_switch(switch)
-    # self.status_page_show('offAI')
-    # self.taskbar_icon.OnCheck(self.taskbar_icon.close_item, self.taskbar_icon.open_item)
+    def deal_web_err(self, switch):
+        self.fei_status = switch
+        if switch:
+            change_res = asyncio.run(qwcosplay_change_host_status(self.info["userid"], 1))
+            if change_res['code'] == 200:
+                debugLog("准备打开托管")
+                self.reconnect = False
+                self.app_instance.fei_status = switch
+                self.app_instance.fei_num += 1
+                self.switch.refresh_switch(switch)
+                self.status_page_show('onAI')
+                self.taskbar_icon.OnCheck(self.taskbar_icon.open_item, self.taskbar_icon.close_item)
+                self.start_threading(f"Fei_{self.info['userid']}", switch)
+            else:
+                debugLog(f"get_fei_switch_state，托管开启失败{change_res}")
+                # wx.MessageBox(f"托管开启失败：{change_res}", "提示", wx.OK | wx.ICON_INFORMATION)
+        else:
+            self.reconnect = True
+            self.app_instance.fei_status = switch
+            self.switch.refresh_switch(switch)
+            self.status_page_show('offAI')
+            self.taskbar_icon.OnCheck(self.taskbar_icon.close_item, self.taskbar_icon.open_item)
 
     def all_close(self):
         self.start_threading(f"Fei_{self.info['userid']}", False)

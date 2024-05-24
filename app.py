@@ -21,12 +21,20 @@ if __name__ == '__main__':
         if win32api.GetLastError() == winerror.ERROR_ALREADY_EXISTS:
             sys.exit(1)
         else:
+            # 切换工作目录
             config_data = Configs()
             app_pos = get_to_startup(config_data.app_name)
             if app_pos:
                 # 提取文件名（不包括扩展名）
                 work_dir = os.path.dirname(app_pos)
                 os.chdir(work_dir)
+            # 获取管理员权限
+            debugLog("管理员权限")
+            debugLog(ctypes.windll.shell32.IsUserAnAdmin())
+            user_admin = ctypes.windll.shell32.IsUserAnAdmin()
+            if user_admin == 0:
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, sys.argv[0], None, 1)
+                sys.exit()
             initLog()
             app = wx.App()  # 实例化APP对象
             frame = IndexPage()
@@ -34,9 +42,9 @@ if __name__ == '__main__':
             # consume_queue_thread.start()
             app.MainLoop()
     # except Exception as e:
-        # debugLog("应用程序报错")
-        # debugLog(str(e))
-        # sys.exit()
+    # debugLog("应用程序报错")
+    # debugLog(str(e))
+    # sys.exit()
     finally:
         if mutex:
             win32api.CloseHandle(mutex)

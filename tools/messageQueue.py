@@ -10,12 +10,13 @@ from api.qwcosplayApi import qwcosplay_task_start, qwcosplay_task_finish, qwcosp
 from datetime import datetime
 from config.config import Configs
 from api.qwcosplayApi import qwcosplay_task_interrupt
+from tools.tools import check_update
 
 
 class MessageQueueManager:
     def __init__(self, deal_err, deal_noerr, deal_task):
-        config_data = Configs()
-        queue_config = config_data.queue_info
+        self.config_data = Configs()
+        queue_config = self.config_data.queue_info
         self.hostname = queue_config["hostname"]
         self.port = queue_config["port"]
         self.username = queue_config["username"]
@@ -36,12 +37,12 @@ class MessageQueueManager:
             parameters = pika.ConnectionParameters(self.hostname, self.port, '/', credentials)
             self.connection = pika.BlockingConnection(parameters)
             self.channel = self.connection.channel()
-            if status == 1:
-                self.deal_noerr()
+            # if status == 1:
+            #     self.deal_noerr()
             return True
         except Exception as e:
-            if con_time == 1 and status == 1:
-                self.deal_err()
+            # if con_time == 1 and status == 1:
+            #     self.deal_err()
             # 这里处理其他类型的异常
             debugLog(f"连接队列出错：")
             debugLog(str(e))
@@ -71,12 +72,12 @@ class MessageQueueManager:
             if self.connection:
                 debugLog("关闭连接")
                 self.connection.close()
-                self.connection = None
-                self.channel = None
-                self.tag = None
         except Exception as e:
             debugLog("关闭连接出错")
             debugLog(str(e))
+        self.connection = None
+        self.channel = None
+        self.tag = None
 
     def consume_message_task(self, queue, userid, fei_num):
         try:
@@ -91,22 +92,27 @@ class MessageQueueManager:
                     # debugLog("队列消息原型")
                     # debugLog(body)
                     task_json = json.loads(body.decode('utf-8'))
-                    if self.un_acked_task.__len__() != 0:
-                        for index, task in enumerate(self.un_acked_task):
-                            if task['id'] == task_json['id']:
-                                debugLog("该任务存在于非人为中断任务列表")
-                                asyncio.run(
-                                    qwcosplay_task_interrupt(task_json['id'],
-                                                             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                             f"任务ack出错：{task['err']}"))
-                                self.un_acked_task.pop(index)
-                                is_deal_task = False
-                                break
+                    if task_json['taskList'] == 'task':
+                        check_update(self.config_data.app_name)
+                        is_deal_task = False
+                    else:
+                        if self.un_acked_task.__len__() != 0:
+                            for index, task in enumerate(self.un_acked_task):
+                                if task['id'] == task_json['id']:
+                                    debugLog("该任务存在于非人为中断任务列表")
+                                    asyncio.run(
+                                        qwcosplay_task_interrupt(task_json['id'],
+                                                                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                                 f"任务ack出错：{task['err']}"))
+                                    self.un_acked_task.pop(index)
+                                    is_deal_task = False
+                                    break
                     if is_deal_task:
                         # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
                         # time.sleep(10)
                         debugLog("任务详情")
                         debugLog(task_json)
+                        # debugLog(fei_num)
                         self.deal_task(task_json, userid, fei_num)
                     try:
                         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -129,8 +135,9 @@ class MessageQueueManager:
             debugLog(str(consume_err))
             if 'ConnectionResetError' in consume_err.args[0]:
                 debugLog("断网导致队列连接失败")
-                self.stop_consume_message_task(queue)
-                self.consume_message_task(queue, userid, fei_num)
+                # self.stop_consume_message_task(queue)
+                # self.consume_message_task(queue, userid, fei_num)
+                # self.close_connection()
 
     def stop_consume_message_task(self, queue):
         try:
@@ -146,6 +153,9 @@ class MessageQueueManager:
                 debugLog(f"tag：{self.tag}")
                 self.channel.stop_consuming(self.tag)
                 self.close_connection()
+                # self.connection = None
+                # self.channel = None
+                # self.tag = None
                 # res = self.channel.basic_cancel(self.tag)
                 # debugLog("关闭消费结果")
                 # debugLog(res)

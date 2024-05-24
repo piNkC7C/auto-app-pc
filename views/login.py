@@ -93,7 +93,7 @@ class LoginPage(wx.Frame):
             generator.generate_qr_code(app_config['data_dir'])
 
         # 实例化SocketHandler类
-        self.socket_handler = socketHandle(f"{self.feiassistid}{self.local_ip}", None)
+        self.socket_handler = socketHandle(f"{self.feiassistid}{self.local_ip}")
 
         # 创建并启动新线程以监听事件
         self.socket_thread = threading.Thread(target=self.start_socket_listener)

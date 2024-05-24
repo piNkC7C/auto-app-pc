@@ -177,7 +177,7 @@ class IndexPage(wx.Frame):
         fei_frame.Show(page_show)
         info = self.file_manager.get_login_info(self.config_data.app_info['data_dir'])
         # 实例化SocketHandler类
-        self.socket = socketHandle(f"{info['feiassistid']}", fei_frame.get_fei_switch_state)
+        self.socket = socketHandle(f"{info['feiassistid']}", fei_frame)
 
     def show_login_page(self, page_show):
         self.stop_socket_listener()

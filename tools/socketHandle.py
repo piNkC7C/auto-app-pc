@@ -3,30 +3,37 @@ import time
 import socketio
 
 from log.log_record import debugLog
+from tools.tools import get_network_status
 
 
 class socketHandle:
-    def __init__(self, socket_id, deal_no_web):
-        self.is_human = False
+    def __init__(self, socket_id, fei_frame=None):
         self.socket_id = socket_id
-        self.deal_no_web = deal_no_web
+        self.fei_frame = fei_frame
         self.sio = socketio.Client()
 
         @self.sio.on('connect')
         def on_connect():
             debugLog(f"client {self.socket_id} connect")
+            if self.fei_frame:
+                if self.fei_frame.reconnect:
+                    debugLog("重新打开托管...")
+                    self.fei_frame.deal_web_err(True)
             self.sio.emit("UserId", self.socket_id)
 
         @self.sio.on('disconnect')
         def on_disconnect():
-            if self.is_human:
-                debugLog('退出应用，手动断开')
+            net_status = get_network_status()
+            if net_status:
+                debugLog('退出应用或远程主机断连')
                 debugLog(f'{self.socket_id} disconnected from server')
             else:
-                debugLog('断网或远程主机断连')
+                debugLog('断网')
                 debugLog(f'{self.socket_id} disconnected from server')
-                # if deal_no_web:
-                #     deal_no_web(False)
+                if self.fei_frame:
+                    if self.fei_frame.fei_status:
+                        debugLog("托管中...执行中断操作")
+                        self.fei_frame.deal_web_err(False)
 
         self.sio.connect('http://124.71.179.1:4745')
         # self.sio.connect('http://172.16.61.6:4745')
@@ -50,7 +57,6 @@ class socketHandle:
         self.sio.wait()
 
     def disconnect(self):
-        self.is_human = True
         # 断开 socket 连接
         self.sio.disconnect()
 

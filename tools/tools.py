@@ -4,8 +4,12 @@ import socket
 import time
 import random
 import string
+import ctypes
+import sys
+import subprocess
 
 from log.log_record import debugLog
+from .updateApp import check_for_updates, download_update, download_update_exe
 
 
 class CustomButton(wx.Button):
@@ -117,6 +121,7 @@ def get_local_ip():
     ip_address = socket.gethostbyname(hostname)
     return ip_address
 
+
 def generate_object_id():
     # 获取当前时间的时间戳（毫秒）
     timestamp_ms = time.time_ns()
@@ -129,3 +134,28 @@ def generate_object_id():
     # 拼接时间戳和随机字符串，生成ObjectId
     object_id = timestamp_hex + random_chars
     return object_id
+
+
+def check_update(app_name):
+    """
+    :return: 0(更新且安装包下载成功)，1（更新但安装包下载失败），2（无需更新），返回获取版本号接口报错信息（获取版本号接口出问题）
+    """
+    download_res = download_update(app_name)
+    time.sleep(0.5)
+    if download_res:
+        debugLog("启动更新脚本")
+        # 启动新的独立进程
+        subprocess.Popen(["update.exe"])
+    debugLog("更新失败：新版本下载失败")
+
+
+def get_network_status():
+    try:
+        # 创建一个socket对象并尝试连接到Google的公共DNS服务器
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(("124.71.179.1", 4745))
+        s.close()
+        return True
+    except OSError as con_err:
+        debugLog(f"网络连接失败：{str(con_err)}")
+        return False
