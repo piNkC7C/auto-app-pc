@@ -22,3 +22,4 @@ class Configs:
             "password": "mq_iflying_2019"
         }
         self.has_start_use_path = [roaming_dir, 'assets', 'has_start_use.json']
+        self.start_fei_status_path = [roaming_dir, 'assets', 'fei_status.json']

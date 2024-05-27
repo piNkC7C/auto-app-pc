@@ -92,9 +92,16 @@ class MessageQueueManager:
                     # debugLog("队列消息原型")
                     # debugLog(body)
                     task_json = json.loads(body.decode('utf-8'))
+                    # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
+                    # time.sleep(10)
+                    debugLog("任务详情")
+                    debugLog(task_json)
+                    # debugLog(fei_num)
                     if task_json['taskList'] == 'task':
+                        ch.basic_ack(delivery_tag=method.delivery_tag)
                         check_update(self.config_data.app_name)
-                        is_deal_task = False
+                        # is_deal_task = False
+                        return
                     else:
                         if self.un_acked_task.__len__() != 0:
                             for index, task in enumerate(self.un_acked_task):
@@ -108,11 +115,6 @@ class MessageQueueManager:
                                     is_deal_task = False
                                     break
                     if is_deal_task:
-                        # task_json = json.loads(body.encode('utf-8').decode('unicode_escape'))
-                        # time.sleep(10)
-                        debugLog("任务详情")
-                        debugLog(task_json)
-                        # debugLog(fei_num)
                         self.deal_task(task_json, userid, fei_num)
                     try:
                         ch.basic_ack(delivery_tag=method.delivery_tag)

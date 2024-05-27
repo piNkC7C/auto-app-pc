@@ -10,6 +10,8 @@ import subprocess
 
 from log.log_record import debugLog
 from .updateApp import check_for_updates, download_update, download_update_exe
+from .fileOperate import File
+from config.config import Configs
 
 
 class CustomButton(wx.Button):
@@ -143,9 +145,13 @@ def check_update(app_name):
     download_res = download_update(app_name)
     time.sleep(0.5)
     if download_res:
+        config_data = Configs()
+        file_manager = File()
+        file_manager.write_json_info_by_folder(config_data.start_fei_status_path, {})
         debugLog("启动更新脚本")
         # 启动新的独立进程
         subprocess.Popen(["update.exe"])
+        return
     debugLog("更新失败：新版本下载失败")
 
 

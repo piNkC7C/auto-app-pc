@@ -130,7 +130,12 @@ class FeiAssistPage(wx.Frame):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
         # self.OnCloseButtonClick("")
+        # 是否托管重连
         self.reconnect = False
+        start_fei_status = self.file_manager.check_json_by_folder(self.config_data.start_fei_status_path)
+        if start_fei_status:
+            self.file_manager.delete_file(self.config_data.start_fei_status_path)
+            self.get_fei_switch_state(True)
         del self.busy
 
     def OnLeftDown(self, event):
