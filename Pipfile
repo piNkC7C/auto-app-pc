@@ -1,0 +1,36 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pyautogui = "*"
+esdk-obs-python = "*"
+pymysql = "*"
+colorama = ">=0.4.1"
+pymongo = ">=3.7.2"
+moment = ">=0.8.2"
+opencv-python = "*"
+cson = ">=0.8"
+redis = ">=3.2.1"
+pytz = "*"
+numpy = "*"
+xlrd = "*"
+xlsxwriter = "*"
+matplotlib = ">=3.0.3"
+pillow = ">=5.4.1"
+pytesseract = "*"
+pywin32 = "*"
+psutil = "*"
+python-socketio = "*"
+pyinstaller = "*"
+cx-freeze = "*"
+pynput = "==1.6.8"
+qrcode = {extras = ["pil"], version = "*"}
+flask = "*"
+websocket-client = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

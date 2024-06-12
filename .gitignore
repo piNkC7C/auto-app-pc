@@ -1,0 +1,12 @@
+/*.log
+/*.spec
+/*.pyc
+/.idea
+/build
+/dist
+/FeiAssistData
+/assets
+/logs
+/res
+/__pycache__
+*/__pycache__
